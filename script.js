@@ -19,6 +19,7 @@ const files = ["a","b","c","d","e","f","g","h"];
 
 let legalMoves = [];
 let moveHistory = [];
+let boardHistory = [];
 
 function renderBoard() {
 
@@ -67,47 +68,20 @@ function renderBoard() {
 }
 function handleClick(row, col) {
 
-    // Move selected piece
+    // Agar selected legal move par click hua
     if (isLegalMove(row, col)) {
-
-        const fromPiece = board[selectedRow][selectedCol];
-const capturedPiece = board[row][col];
-
-// Temporary move
-makeMove(selectedRow, selectedCol, row, col);
-return;
-
-// Check if own king is in check
-const myColor = currentPlayer;
-
-if (isKingInCheck(myColor)) {
-
-    // Undo move
-    board[selectedRow][selectedCol] = fromPiece;
-    board[row][col] = capturedPiece;
-
-    legalMoves = [];
-    renderBoard();
-    return;
-}
-
-// Move accepted
-selectedRow = null;
-selectedCol = null;
-legalMoves = [];
-
-currentPlayer = currentPlayer === "white" ? "black" : "white";
-
-renderBoard();
-return;
+        makeMove(selectedRow, selectedCol, row, col);
+        return;
     }
 
     const piece = board[row][col];
 
+    // Empty square
     if (piece === "") {
         return;
     }
 
+    // Wrong color
     if (currentPlayer === "white" && !isWhitePiece(piece)) {
         return;
     }
@@ -116,15 +90,20 @@ return;
         return;
     }
 
+    // Select piece
     selectedRow = row;
     selectedCol = col;
 
+    // Generate legal moves
     legalMoves = getLegalMoves(piece, row, col);
 
-    renderBoard();
+     console.log("Piece:", piece);
+     console.table(legalMoves);
+
+renderBoard();
 }
 function makeMove(fromRow, fromCol, toRow, toCol) {
-
+    boardHistory.push(JSON.parse(JSON.stringify(board)));
     const movingPiece = board[fromRow][fromCol];
     const capturedPiece = board[toRow][toCol];
 
@@ -176,6 +155,34 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
     renderBoard();
 
     return true;
+}
+function undoMove() {
+
+    if (boardHistory.length === 0) {
+        return;
+    }
+
+    const previousBoard = boardHistory.pop();
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            board[row][col] = previousBoard[row][col];
+
+        }
+
+    }
+
+    moveHistory.pop();
+
+    currentPlayer = currentPlayer === "white"
+        ? "black"
+        : "white";
+
+    updateMoveHistory();
+    renderBoard();
+
 }
 function updateMoveHistory() {
 
@@ -664,13 +671,12 @@ function isInsideBoard(row, col) {
     return row >= 0 && row < 8 && col >= 0 && col < 8;
 }
 function isWhitePiece(piece) {
-    return "♔♕♖♗♘♙".includes(piece);
+    return piece !== "" && "♔♕♖♗♘♙".includes(piece);
 }
 
 function isBlackPiece(piece) {
-    return "♚♛♜♝♞♟".includes(piece);
+    return piece !== "" && "♚♛♜♝♞♟".includes(piece);
 }
-
 function isLegalMove(row, col) {
 
     for (const move of legalMoves) {
@@ -685,3 +691,14 @@ function isLegalMove(row, col) {
 }
 
 renderBoard();
+document.addEventListener("keydown", function(event){
+
+    if(event.ctrlKey && event.key.toLowerCase() === "z"){
+
+        event.preventDefault();
+
+        undoMove();
+
+    }
+
+});
