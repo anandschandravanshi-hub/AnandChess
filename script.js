@@ -1,6 +1,14 @@
 let selectedRow = null;
 let selectedCol = null;
 let currentPlayer = "white";
+let whiteKingMoved = false;
+let blackKingMoved = false;
+
+let whiteLeftRookMoved = false;
+let whiteRightRookMoved = false;
+
+let blackLeftRookMoved = false;
+let blackRightRookMoved = false;
 
 const chessboard = document.getElementById("chessboard");
 
@@ -105,12 +113,96 @@ renderBoard();
 function makeMove(fromRow, fromCol, toRow, toCol) {
     boardHistory.push(JSON.parse(JSON.stringify(board)));
     const movingPiece = board[fromRow][fromCol];
+    // Track King movement
+if (movingPiece === "♔") {
+    whiteKingMoved = true;
+}
+
+if (movingPiece === "♚") {
+    blackKingMoved = true;
+}
+
+// Track White Rooks
+if (movingPiece === "♖") {
+
+    if (fromRow === 7 && fromCol === 0) {
+        whiteLeftRookMoved = true;
+    }
+
+    if (fromRow === 7 && fromCol === 7) {
+        whiteRightRookMoved = true;
+    }
+
+}
+
+// Track Black Rooks
+if (movingPiece === "♜") {
+
+    if (fromRow === 0 && fromCol === 0) {
+        blackLeftRookMoved = true;
+    }
+
+    if (fromRow === 0 && fromCol === 7) {
+        blackRightRookMoved = true;
+    }
+
+}
     const capturedPiece = board[toRow][toCol];
 
     // Temporary move
     board[toRow][toCol] = movingPiece;
     board[fromRow][fromCol] = "";
+// ======================
+// CASTLING
+// ======================
 
+// White King Side
+if (
+    movingPiece === "♔" &&
+    fromRow === 7 &&
+    fromCol === 4 &&
+    toRow === 7 &&
+    toCol === 6
+) {
+    board[7][5] = "♖";
+    board[7][7] = "";
+}
+
+// White Queen Side
+if (
+    movingPiece === "♔" &&
+    fromRow === 7 &&
+    fromCol === 4 &&
+    toRow === 7 &&
+    toCol === 2
+) {
+    board[7][3] = "♖";
+    board[7][0] = "";
+}
+
+// Black King Side
+if (
+    movingPiece === "♚" &&
+    fromRow === 0 &&
+    fromCol === 4 &&
+    toRow === 0 &&
+    toCol === 6
+) {
+    board[0][5] = "♜";
+    board[0][7] = "";
+}
+
+// Black Queen Side
+if (
+    movingPiece === "♚" &&
+    fromRow === 0 &&
+    fromCol === 4 &&
+    toRow === 0 &&
+    toCol === 2
+) {
+    board[0][3] = "♜";
+    board[0][0] = "";
+}
     // Auto Promotion
     if (movingPiece === "♙" && toRow === 0) {
         board[toRow][toCol] = "♕";
@@ -152,6 +244,14 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
     console.table(moveHistory);
 
     updateMoveHistory();
+    console.log({
+    whiteKingMoved,
+    blackKingMoved,
+    whiteLeftRookMoved,
+    whiteRightRookMoved,
+    blackLeftRookMoved,
+    blackRightRookMoved
+});
     renderBoard();
 
     return true;
@@ -419,7 +519,7 @@ function getQueenMoves(row, col, color) {
     ];
 
 }
-function getKingMoves(row, col) {
+function getKingMoves(row, col, color) {
 
     let moves = [];
 
@@ -461,6 +561,59 @@ function getKingMoves(row, col) {
         }
 
     }
+    // White King Side Castling
+if (
+    color === "white" &&
+    !whiteKingMoved &&
+    !whiteRightRookMoved &&
+    row === 7 &&
+    col === 4 &&
+    board[7][5] === "" &&
+    board[7][6] === ""
+) {
+    moves.push([7, 6]);
+}
+
+// White Queen Side Castling
+if (
+    color === "white" &&
+    !whiteKingMoved &&
+    !whiteLeftRookMoved &&
+    row === 7 &&
+    col === 4 &&
+    board[7][1] === "" &&
+    board[7][2] === "" &&
+    board[7][3] === ""
+) {
+    moves.push([7, 2]);
+}
+
+// Black King Side Castling
+if (
+    color === "black" &&
+    !blackKingMoved &&
+    !blackRightRookMoved &&
+    row === 0 &&
+    col === 4 &&
+    board[0][5] === "" &&
+    board[0][6] === ""
+) {
+    moves.push([0, 6]);
+}
+
+// Black Queen Side Castling
+if (
+    color === "black" &&
+    !blackKingMoved &&
+    !blackLeftRookMoved &&
+    row === 0 &&
+    col === 4 &&
+    board[0][1] === "" &&
+    board[0][2] === "" &&
+    board[0][3] === ""
+) {
+    moves.push([0, 2]);
+}
 
     return moves;
 
@@ -500,9 +653,10 @@ function getLegalMoves(piece, row, col) {
             return getQueenMoves(row, col, "black");
 
         case "♔":
-        case "♚":
-            return getKingMoves(row, col);
+        return getKingMoves(row, col, "white");
 
+        case "♚":
+        return getKingMoves(row, col, "black");
         default:
             return [];
     }
@@ -586,10 +740,10 @@ function getAttackSquares(piece, row, col) {
             return getQueenMoves(row, col, "black");
 
         case "♔":
-            return getKingMoves(row, col);
+        return getKingMoves(row, col, "white");
 
         case "♚":
-            return getKingMoves(row, col);
+        return getKingMoves(row, col, "black");
 
         default:
             return [];
