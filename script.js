@@ -43,6 +43,12 @@ function renderBoard() {
 
             square.textContent = board[row][col];
 
+            if (board[row][col] === "♔" && isKingInCheck("white")) {
+            square.style.boxShadow = "inset 0 0 0 4px red";
+}
+            if (board[row][col] === "♚" && isKingInCheck("black")) {
+            square.style.boxShadow = "inset 0 0 0 4px red";
+}
             if (isLegalMove(row, col)) {
                 square.style.boxShadow = "inset 0 0 0 4px gold";
             }
@@ -478,6 +484,32 @@ function isKingInCheck(color) {
     return isSquareAttacked(king.row, king.col, attacker);
 
 }
+function hasAnyLegalMove(color) {
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            const piece = board[row][col];
+
+            if (piece === "") continue;
+
+            if (color === "white" && !isWhitePiece(piece)) continue;
+            if (color === "black" && !isBlackPiece(piece)) continue;
+
+            const moves = getLegalMoves(piece, row, col);
+
+            if (moves.length > 0) {
+                return true;
+            }
+
+        }
+
+    }
+
+    return false;
+
+}
 function isInsideBoard(row, col) {
     return row >= 0 && row < 8 && col >= 0 && col < 8;
 }
@@ -501,6 +533,6 @@ function isLegalMove(row, col) {
 
     return false;
 }
-console.log("White:", isKingInCheck("white"));
-console.log("Black:", isKingInCheck("black"));
+console.log("White Moves:", hasAnyLegalMove("white"));
+console.log("Black Moves:", hasAnyLegalMove("black"));
 renderBoard();
