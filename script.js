@@ -61,17 +61,36 @@ function handleClick(row, col) {
     // Move selected piece
     if (isLegalMove(row, col)) {
 
-        board[row][col] = board[selectedRow][selectedCol];
-        board[selectedRow][selectedCol] = "";
+        const fromPiece = board[selectedRow][selectedCol];
+const capturedPiece = board[row][col];
 
-        selectedRow = null;
-        selectedCol = null;
-        legalMoves = [];
+// Temporary move
+board[row][col] = fromPiece;
+board[selectedRow][selectedCol] = "";
 
-        currentPlayer = currentPlayer === "white" ? "black" : "white";
+// Check if own king is in check
+const myColor = currentPlayer;
 
-        renderBoard();
-        return;
+if (isKingInCheck(myColor)) {
+
+    // Undo move
+    board[selectedRow][selectedCol] = fromPiece;
+    board[row][col] = capturedPiece;
+
+    legalMoves = [];
+    renderBoard();
+    return;
+}
+
+// Move accepted
+selectedRow = null;
+selectedCol = null;
+legalMoves = [];
+
+currentPlayer = currentPlayer === "white" ? "black" : "white";
+
+renderBoard();
+return;
     }
 
     const piece = board[row][col];
