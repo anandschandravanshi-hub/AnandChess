@@ -91,19 +91,10 @@ function handleClick(row, col) {
     selectedRow = row;
     selectedCol = col;
 
-    if (piece === "♙") {
-        legalMoves = getWhitePawnMoves(row, col);
-    } else if (piece === "♟") {
-        legalMoves = getBlackPawnMoves(row, col);
-    } else if (piece === "♘" || piece === "♞") {
-        legalMoves = getKnightMoves(row, col);
-    } else {
-        legalMoves = [];
-    }
+    legalMoves = getLegalMoves(piece, row, col);
 
     renderBoard();
 }
-
 function getWhitePawnMoves(row, col) {
 
     let moves = [];
@@ -172,36 +163,304 @@ function getBlackPawnMoves(row, col) {
     return moves;
 }
 
-function getKnightMoves(row, col) {
+function getKnightMoves(row, col, color) {
 
-    const moves = [];
+    let moves = [];
 
-    const offsets = [
+    const knightMoves = [
         [-2,-1],[-2,1],
         [-1,-2],[-1,2],
         [1,-2],[1,2],
         [2,-1],[2,1]
     ];
 
-    for (const [dr, dc] of offsets) {
+    for (const [dr, dc] of knightMoves) {
 
-        const r = row + dr;
-        const c = col + dc;
+        let r = row + dr;
+        let c = col + dc;
 
         if (r < 0 || r > 7 || c < 0 || c > 7) continue;
 
-        const target = board[r][c];
+        let target = board[r][c];
 
-        if (
-            target === "" ||
-            (currentPlayer === "white" && isBlackPiece(target)) ||
-            (currentPlayer === "black" && isWhitePiece(target))
-        ) {
+        if (target === "") {
             moves.push([r, c]);
+        }
+        else if (color === "white") {
+
+            if (isBlackPiece(target)) {
+                moves.push([r, c]);
+            }
+
+        }
+        else {
+
+            if (isWhitePiece(target)) {
+                moves.push([r, c]);
+            }
+
+        }
+
+    }
+
+    return moves;
+}
+function getBishopMoves(row, col, color) {
+
+    let moves = [];
+
+    const directions = [
+        [-1,-1],
+        [-1,1],
+        [1,-1],
+        [1,1]
+    ];
+
+    for (const [dr, dc] of directions) {
+
+        let r = row + dr;
+        let c = col + dc;
+
+        while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+
+            let target = board[r][c];
+
+            if (target === "") {
+                moves.push([r, c]);
+            }
+
+            else if (color === "white") {
+
+                if (isBlackPiece(target)) {
+                    moves.push([r, c]);
+                }
+
+                break;
+            }
+
+            else {
+
+                if (isWhitePiece(target)) {
+                    moves.push([r, c]);
+                }
+
+                break;
+            }
+
+            r += dr;
+            c += dc;
         }
     }
 
     return moves;
+}
+function getRookMoves(row, col, color) {
+
+    let moves = [];
+
+    const directions = [
+        [-1,0],
+        [1,0],
+        [0,-1],
+        [0,1]
+    ];
+
+    for (const [dr, dc] of directions) {
+
+        let r = row + dr;
+        let c = col + dc;
+
+        while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+
+            let target = board[r][c];
+
+            if (target === "") {
+                moves.push([r, c]);
+            }
+
+            else if (color === "white") {
+
+                if (isBlackPiece(target)) {
+                    moves.push([r, c]);
+                }
+
+                break;
+            }
+
+            else {
+
+                if (isWhitePiece(target)) {
+                    moves.push([r, c]);
+                }
+
+                break;
+            }
+
+            r += dr;
+            c += dc;
+        }
+    }
+
+    return moves;
+}
+function getQueenMoves(row, col) {
+
+    let bishopMoves = getBishopMoves(row, col);
+    let rookMoves = getRookMoves(row, col);
+
+    return [...bishopMoves, ...rookMoves];
+
+}
+function getKingMoves(row, col) {
+
+    let moves = [];
+
+    const directions = [
+        [-1,-1],[-1,0],[-1,1],
+        [0,-1],         [0,1],
+        [1,-1],[1,0],[1,1]
+    ];
+
+    for(const [dr,dc] of directions){
+
+        let r = row + dr;
+        let c = col + dc;
+
+        if(r<0 || r>7 || c<0 || c>7){
+            continue;
+        }
+
+        let target = board[r][c];
+
+        if(target===""){
+            moves.push([r,c]);
+        }
+
+        else if(currentPlayer==="white"){
+
+            if(isBlackPiece(target)){
+                moves.push([r,c]);
+            }
+
+        }
+
+        else{
+
+            if(isWhitePiece(target)){
+                moves.push([r,c]);
+            }
+
+        }
+
+    }
+
+    return moves;
+
+}
+function getLegalMoves(piece, row, col) {
+
+    switch (piece) {
+
+        case "♙":
+            return getWhitePawnMoves(row, col);
+
+        case "♟":
+            return getBlackPawnMoves(row, col);
+
+        case "♘":
+            return getKnightMoves(row, col, "white");
+
+        case "♞":
+            return getKnightMoves(row, col, "black");
+
+        case "♗":
+            return getBishopMoves(row, col, "white");
+
+        case "♝":
+            return getBishopMoves(row, col, "black");
+
+        case "♖":
+            return getRookMoves(row, col, "white");
+
+        case "♜":
+            return getRookMoves(row, col, "black");
+
+        case "♕":
+            return getQueenMoves(row, col, "white");
+
+        case "♛":
+            return getQueenMoves(row, col, "black");
+
+        case "♔":
+        case "♚":
+            return getKingMoves(row, col);
+
+        default:
+            return [];
+    }
+}
+function findKing(color) {
+
+    const king = color === "white" ? "♔" : "♚";
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            if (board[row][col] === king) {
+                return { row, col };
+            }
+
+        }
+
+    }
+
+    return null;
+
+}
+function isSquareAttacked(row, col, attackerColor) {
+
+    for (let r = 0; r < 8; r++) {
+
+        for (let c = 0; c < 8; c++) {
+
+            const piece = board[r][c];
+
+            if (piece === "") continue;
+
+            if (attackerColor === "white" && !isWhitePiece(piece)) continue;
+            if (attackerColor === "black" && !isBlackPiece(piece)) continue;
+
+            const moves = getLegalMoves(piece, r, c);
+
+            for (const move of moves) {
+
+                if (move[0] === row && move[1] === col) {
+                    return true;
+                }
+
+            }
+
+        }
+
+    }
+
+    return false;
+
+}
+function isKingInCheck(color) {
+
+    const king = findKing(color);
+
+    if (!king) return false;
+
+    const attacker = color === "white" ? "black" : "white";
+
+    return isSquareAttacked(king.row, king.col, attacker);
+
+}
+function isInsideBoard(row, col) {
+    return row >= 0 && row < 8 && col >= 0 && col < 8;
 }
 function isWhitePiece(piece) {
     return "♔♕♖♗♘♙".includes(piece);
@@ -223,5 +482,6 @@ function isLegalMove(row, col) {
 
     return false;
 }
-
+console.log("White:", isKingInCheck("white"));
+console.log("Black:", isKingInCheck("black"));
 renderBoard();
