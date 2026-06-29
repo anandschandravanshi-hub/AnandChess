@@ -18,6 +18,7 @@ const board = [
 const files = ["a","b","c","d","e","f","g","h"];
 
 let legalMoves = [];
+let moveHistory = [];
 
 function renderBoard() {
 
@@ -42,7 +43,9 @@ function renderBoard() {
             square.dataset.square = files[col] + (8 - row);
 
             square.textContent = board[row][col];
-
+            if (row === selectedRow && col === selectedCol) {
+            square.classList.add("selected");
+}
             if (board[row][col] === "♔" && isKingInCheck("white")) {
             square.style.boxShadow = "inset 0 0 0 4px red";
 }
@@ -71,8 +74,8 @@ function handleClick(row, col) {
 const capturedPiece = board[row][col];
 
 // Temporary move
-board[row][col] = fromPiece;
-board[selectedRow][selectedCol] = "";
+makeMove(selectedRow, selectedCol, row, col);
+return;
 
 // Check if own king is in check
 const myColor = currentPlayer;
@@ -119,6 +122,79 @@ return;
     legalMoves = getLegalMoves(piece, row, col);
 
     renderBoard();
+}
+function makeMove(fromRow, fromCol, toRow, toCol) {
+
+    const movingPiece = board[fromRow][fromCol];
+    const capturedPiece = board[toRow][toCol];
+
+    // Temporary move
+    board[toRow][toCol] = movingPiece;
+    board[fromRow][fromCol] = "";
+
+    // Auto Promotion
+    if (movingPiece === "♙" && toRow === 0) {
+        board[toRow][toCol] = "♕";
+    }
+
+    if (movingPiece === "♟" && toRow === 7) {
+        board[toRow][toCol] = "♛";
+    }
+
+    // Illegal move?
+    if (isKingInCheck(currentPlayer)) {
+
+        // Undo move
+        board[fromRow][fromCol] = movingPiece;
+        board[toRow][toCol] = capturedPiece;
+
+        legalMoves = [];
+        renderBoard();
+
+        return false;
+    }
+
+    // Save move history
+    moveHistory.push({
+        piece: movingPiece,
+        from: files[fromCol] + (8 - fromRow),
+        to: files[toCol] + (8 - toRow),
+        captured: capturedPiece
+    });
+
+    selectedRow = null;
+    selectedCol = null;
+    legalMoves = [];
+
+    currentPlayer = currentPlayer === "white"
+        ? "black"
+        : "white";
+
+    console.table(moveHistory);
+
+    updateMoveHistory();
+    renderBoard();
+
+    return true;
+}
+function updateMoveHistory() {
+
+    const movesDiv = document.getElementById("moves");
+
+    movesDiv.innerHTML = "";
+
+    moveHistory.forEach((move, index) => {
+
+        movesDiv.innerHTML +=
+            (index + 1) +
+            ". " +
+            move.from +
+            " → " +
+            move.to +
+            "<br>";
+
+    });
+
 }
 function getWhitePawnMoves(row, col) {
 
@@ -328,12 +404,12 @@ function getRookMoves(row, col, color) {
 
     return moves;
 }
-function getQueenMoves(row, col) {
+function getQueenMoves(row, col, color) {
 
-    let bishopMoves = getBishopMoves(row, col);
-    let rookMoves = getRookMoves(row, col);
-
-    return [...bishopMoves, ...rookMoves];
+    return [
+        ...getBishopMoves(row, col, color),
+        ...getRookMoves(row, col, color)
+    ];
 
 }
 function getKingMoves(row, col) {
@@ -443,6 +519,76 @@ function findKing(color) {
     return null;
 
 }
+function getPawnAttackSquares(row, col, color) {
+
+    let attacks = [];
+
+    if (color === "white") {
+
+        if (row > 0 && col > 0)
+            attacks.push([row - 1, col - 1]);
+
+        if (row > 0 && col < 7)
+            attacks.push([row - 1, col + 1]);
+
+    } else {
+
+        if (row < 7 && col > 0)
+            attacks.push([row + 1, col - 1]);
+
+        if (row < 7 && col < 7)
+            attacks.push([row + 1, col + 1]);
+
+    }
+
+    return attacks;
+
+}
+function getAttackSquares(piece, row, col) {
+
+    switch (piece) {
+
+        case "♙":
+            return getPawnAttackSquares(row, col, "white");
+
+        case "♟":
+            return getPawnAttackSquares(row, col, "black");
+
+        case "♘":
+            return getKnightMoves(row, col, "white");
+
+        case "♞":
+            return getKnightMoves(row, col, "black");
+
+        case "♗":
+            return getBishopMoves(row, col, "white");
+
+        case "♝":
+            return getBishopMoves(row, col, "black");
+
+        case "♖":
+            return getRookMoves(row, col, "white");
+
+        case "♜":
+            return getRookMoves(row, col, "black");
+
+        case "♕":
+            return getQueenMoves(row, col, "white");
+
+        case "♛":
+            return getQueenMoves(row, col, "black");
+
+        case "♔":
+            return getKingMoves(row, col);
+
+        case "♚":
+            return getKingMoves(row, col);
+
+        default:
+            return [];
+    }
+
+}
 function isSquareAttacked(row, col, attackerColor) {
 
     for (let r = 0; r < 8; r++) {
@@ -456,7 +602,7 @@ function isSquareAttacked(row, col, attackerColor) {
             if (attackerColor === "white" && !isWhitePiece(piece)) continue;
             if (attackerColor === "black" && !isBlackPiece(piece)) continue;
 
-            const moves = getLegalMoves(piece, r, c);
+            const moves = getAttackSquares(piece, r, c);
 
             for (const move of moves) {
 
@@ -479,9 +625,13 @@ function isKingInCheck(color) {
 
     if (!king) return false;
 
-    const attacker = color === "white" ? "black" : "white";
+    const attackerColor = color === "white" ? "black" : "white";
 
-    return isSquareAttacked(king.row, king.col, attacker);
+    return isSquareAttacked(
+        king.row,
+        king.col,
+        attackerColor
+    );
 
 }
 function hasAnyLegalMove(color) {
@@ -533,6 +683,5 @@ function isLegalMove(row, col) {
 
     return false;
 }
-console.log("White Moves:", hasAnyLegalMove("white"));
-console.log("Black Moves:", hasAnyLegalMove("black"));
+
 renderBoard();
