@@ -106,9 +106,6 @@ function handleClick(row, col) {
     // Generate legal moves
     legalMoves = getLegalMoves(piece, row, col);
 
-     console.log("Piece:", piece);
-     console.table(legalMoves);
-
 renderBoard();
 }
 function makeMove(fromRow, fromCol, toRow, toCol) {
@@ -248,19 +245,24 @@ if (
     currentPlayer = currentPlayer === "white"
         ? "black"
         : "white";
+    if (isKingInCheck(currentPlayer)) {
 
-    console.table(moveHistory);
+    if (hasAnyLegalMove(currentPlayer)) {
+
+        alert("Check!");
+
+    } else {
+
+        alert("Checkmate!");
+
+    }
+
+}
 
     updateMoveHistory();
-    console.log(lastMove);
-    console.log({
-    whiteKingMoved,
-    blackKingMoved,
-    whiteLeftRookMoved,
-    whiteRightRookMoved,
-    blackLeftRookMoved,
-    blackRightRookMoved
-});
+    if (isKingInCheck(currentPlayer) && !hasAnyLegalMove(currentPlayer)) {
+    alert("Checkmate!");
+}
     renderBoard();
 
     return true;
@@ -808,6 +810,25 @@ function isKingInCheck(color) {
     );
 
 }
+function tryMove(fromRow, fromCol, toRow, toCol, color) {
+
+    const movingPiece = board[fromRow][fromCol];
+    const capturedPiece = board[toRow][toCol];
+
+    // Temporary move
+    board[toRow][toCol] = movingPiece;
+    board[fromRow][fromCol] = "";
+
+    const safe = !isKingInCheck(color);
+
+    // Undo move
+    board[fromRow][fromCol] = movingPiece;
+    board[toRow][toCol] = capturedPiece;
+
+    return safe;
+
+}
+
 function hasAnyLegalMove(color) {
 
     for (let row = 0; row < 8; row++) {
@@ -823,8 +844,12 @@ function hasAnyLegalMove(color) {
 
             const moves = getLegalMoves(piece, row, col);
 
-            if (moves.length > 0) {
-                return true;
+            for (const move of moves) {
+
+                if (tryMove(row, col, move[0], move[1], color)) {
+                    return true;
+                }
+
             }
 
         }
