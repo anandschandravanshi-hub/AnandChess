@@ -27,6 +27,7 @@ const files = ["a","b","c","d","e","f","g","h"];
 
 let legalMoves = [];
 let moveHistory = [];
+let lastMove = null;
 let boardHistory = [];
 
 function renderBoard() {
@@ -232,6 +233,13 @@ if (
         to: files[toCol] + (8 - toRow),
         captured: capturedPiece
     });
+    lastMove = {
+    piece: movingPiece,
+    fromRow,
+    fromCol,
+    toRow,
+    toCol
+};
 
     selectedRow = null;
     selectedCol = null;
@@ -244,6 +252,7 @@ if (
     console.table(moveHistory);
 
     updateMoveHistory();
+    console.log(lastMove);
     console.log({
     whiteKingMoved,
     blackKingMoved,
@@ -569,7 +578,8 @@ if (
     row === 7 &&
     col === 4 &&
     board[7][5] === "" &&
-    board[7][6] === ""
+    board[7][6] === "" &&
+    board[7][7] === "♖"
 ) {
     moves.push([7, 6]);
 }
@@ -583,7 +593,8 @@ if (
     col === 4 &&
     board[7][1] === "" &&
     board[7][2] === "" &&
-    board[7][3] === ""
+    board[7][3] === "" &&
+    board[7][0] === "♖"
 ) {
     moves.push([7, 2]);
 }
@@ -596,7 +607,8 @@ if (
     row === 0 &&
     col === 4 &&
     board[0][5] === "" &&
-    board[0][6] === ""
+    board[0][6] === "" &&
+    board[0][7] === "♜"
 ) {
     moves.push([0, 6]);
 }
@@ -610,7 +622,8 @@ if (
     col === 4 &&
     board[0][1] === "" &&
     board[0][2] === "" &&
-    board[0][3] === ""
+    board[0][3] === "" &&
+    board[0][0] === "♜"
 ) {
     moves.push([0, 2]);
 }
@@ -843,7 +856,7 @@ function isLegalMove(row, col) {
 
     return false;
 }
-
+console.log(lastMove);
 renderBoard();
 document.addEventListener("keydown", function(event){
 
