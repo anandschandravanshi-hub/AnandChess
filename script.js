@@ -12,6 +12,12 @@ let blackRightRookMoved = false;
 
 const chessboard = document.getElementById("chessboard");
 
+const capturedWhite =
+    document.getElementById("captured-white");
+
+const capturedBlack =
+    document.getElementById("captured-black");
+
 const board = [
     ["♜","♞","♝","♛","♚","♝","♞","♜"],
     ["♟","♟","♟","♟","♟","♟","♟","♟"],
@@ -30,9 +36,30 @@ let moveHistory = [];
 let lastMove = null;
 let enPassantSquare = null;
 let halfMoveClock = 0;
+let positionHistory = [];
+let lastMoveHighlight = null;
 let boardHistory = [];
 
-function renderBoard() {
+function animateMove(toRow, toCol) {
+
+    requestAnimationFrame(() => {
+
+        const square = document.querySelector(
+            `[data-row="${toRow}"][data-col="${toCol}"]`
+        );
+
+        if (!square) return;
+
+        square.style.transform = "scale(1.25)";
+
+        setTimeout(() => {
+            square.style.transform = "scale(1)";
+        }, 180);
+
+    });
+
+}
+function createBoard() {
 
     chessboard.innerHTML = "";
 
@@ -46,28 +73,139 @@ function renderBoard() {
 
             if ((row + col) % 2 === 0) {
                 square.classList.add("dark");
-            } else {
+            }
+            else {
                 square.classList.add("light");
             }
 
             square.dataset.row = row;
             square.dataset.col = col;
-            square.dataset.square = files[col] + (8 - row);
 
-            square.textContent = board[row][col];
-            if (row === selectedRow && col === selectedCol) {
-            square.classList.add("selected");
+            square.addEventListener(
+                "click",
+                () => handleClick(row, col)
+            );
+
+            chessboard.appendChild(square);
+
+        }
+
+    }
+
 }
-            if (board[row][col] === "♔" && isKingInCheck("white")) {
-            square.style.boxShadow = "inset 0 0 0 4px red";
-}
-            if (board[row][col] === "♚" && isKingInCheck("black")) {
-            square.style.boxShadow = "inset 0 0 0 4px red";
-}
-            if (isLegalMove(row, col)) {
-                square.style.boxShadow = "inset 0 0 0 4px gold";
+function renderBoard() {
+
+    chessboard.innerHTML = "";
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            const square = document.createElement("div");
+
+            square.classList.add("square");
+
+            // Square Color
+            if ((row + col) % 2 === 0) {
+                square.classList.add("dark");
+            } else {
+                square.classList.add("light");
             }
 
+            // Data Attributes
+            square.dataset.row = row;
+            square.dataset.col = col;
+            square.dataset.square = files[col] + (8 - row);
+
+            // ======================
+            // Last Move Highlight
+            // ======================
+            if (
+    lastMoveHighlight &&
+    (
+        (row === lastMoveHighlight.fromRow &&
+         col === lastMoveHighlight.fromCol) ||
+
+        (row === lastMoveHighlight.toRow &&
+         col === lastMoveHighlight.toCol)
+    )
+) {
+
+    if ((row + col) % 2 === 0) {
+        square.classList.add("last-move-dark");
+    } else {
+        square.classList.add("last-move-light");
+    }
+
+}
+            // Piece
+            const piece = document.createElement("div");
+
+            piece.classList.add("piece");
+
+            piece.textContent = board[row][col];
+
+            square.appendChild(piece);
+            // Rank (1-8)
+if (col === 0) {
+
+    const rank = document.createElement("span");
+
+    rank.className = "rank-coordinate";
+
+    rank.textContent = 8 - row;
+
+    square.appendChild(rank);
+
+}
+
+// File (a-h)
+if (row === 7) {
+
+    const file = document.createElement("span");
+
+    file.className = "file-coordinate";
+
+    file.textContent = files[col];
+
+    square.appendChild(file);
+
+}
+
+            // Selected Piece
+            if (row === selectedRow && col === selectedCol) {
+                square.classList.add("selected");
+            }
+
+            // Check Highlight
+            if (board[row][col] === "♔" && isKingInCheck("white")) {
+                square.style.boxShadow = "inset 0 0 0 4px red";
+            }
+
+            if (board[row][col] === "♚" && isKingInCheck("black")) {
+                square.style.boxShadow = "inset 0 0 0 4px red";
+            }
+
+            // Legal Move Highlight
+            if (isLegalMove(row, col)) {
+
+    if (board[row][col] === "") {
+
+        const dot = document.createElement("div");
+        dot.classList.add("move-dot");
+        square.appendChild(dot);
+
+    } else {
+
+        const ring = document.createElement("div");
+        ring.classList.add("capture-ring");
+        square.appendChild(ring);
+
+    }
+
+}
+
+            // Click Event
             square.addEventListener("click", () => handleClick(row, col));
 
             chessboard.appendChild(square);
@@ -75,6 +213,66 @@ function renderBoard() {
         }
 
     }
+
+}
+function animateMove(piece, fromRow, fromCol, toRow, toCol) {
+
+    const fromSquare = document.querySelector(
+        `[data-row="${fromRow}"][data-col="${fromCol}"]`
+    );
+
+    const toSquare = document.querySelector(
+        `[data-row="${toRow}"][data-col="${toCol}"]`
+    );
+
+    if (!fromSquare || !toSquare) return Promise.resolve();
+
+    const fromRect = fromSquare.getBoundingClientRect();
+    const toRect = toSquare.getBoundingClientRect();
+
+    const pieceElement = fromSquare.querySelector(".piece");
+
+    if (pieceElement) {
+    pieceElement.style.visibility = "hidden";
+}
+
+    const clone = document.createElement("div");
+
+    clone.className = "flying-piece";
+    clone.textContent = piece;
+
+    clone.style.left =
+    fromRect.left + (fromRect.width - 52) / 2 + "px";
+
+clone.style.top =
+    fromRect.top + (fromRect.height - 52) / 2 + "px";
+
+    document.body.appendChild(clone);
+
+    return new Promise(resolve => {
+
+        requestAnimationFrame(() => {
+
+            clone.style.left =
+            toRect.left + (toRect.width - 52) / 2 + "px";
+
+            clone.style.top =
+            toRect.top + (toRect.height - 52) / 2 + "px";
+
+        });
+
+        clone.addEventListener("transitionend", () => {
+
+            clone.remove();
+            if (pieceElement) {
+    pieceElement.style.visibility = "visible";
+}
+
+            resolve();
+
+        }, { once:true });
+
+    });
 
 }
 function handleClick(row, col) {
@@ -298,15 +496,114 @@ function validateMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol
     return true;
 
 }
+function getMoveNotation(
+    piece,
+    fromCol,
+    toRow,
+    toCol,
+    captured
+){
+
+    // =========================
+    // Castling
+    // =========================
+    if (
+        (piece === "♔" || piece === "♚") &&
+        Math.abs(toCol - fromCol) === 2
+    ) {
+
+        if (toCol === 6) {
+            return "O-O";
+        }
+
+        if (toCol === 2) {
+            return "O-O-O";
+        }
+
+    }
+
+    const file = files[toCol];
+    const rank = 8 - toRow;
+
+    let symbol = "";
+
+    switch (piece) {
+
+        case "♔":
+        case "♚":
+            symbol = "K";
+            break;
+
+        case "♕":
+        case "♛":
+            symbol = "Q";
+            break;
+
+        case "♖":
+        case "♜":
+            symbol = "R";
+            break;
+
+        case "♗":
+        case "♝":
+            symbol = "B";
+            break;
+
+        case "♘":
+        case "♞":
+            symbol = "N";
+            break;
+
+        case "♙":
+        case "♟":
+
+            if (captured !== "") {
+
+                return (
+                    files[fromCol] +
+                    "x" +
+                    file +
+                    rank
+                );
+
+            }
+
+            return file + rank;
+
+    }
+
+    if (captured !== "") {
+
+        return (
+            symbol +
+            "x" +
+            file +
+            rank
+        );
+
+    }
+
+    return symbol + file + rank;
+
+}
 function saveMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
 
+    // Move History
     moveHistory.push({
-        piece: movingPiece,
-        from: files[fromCol] + (8 - fromRow),
-        to: files[toCol] + (8 - toRow),
-        captured: capturedPiece
-    });
+    piece: movingPiece,
+    from: files[fromCol] + (8 - fromRow),
+    to: files[toCol] + (8 - toRow),
+    captured: capturedPiece,
 
+    notation: getMoveNotation(
+    movingPiece,
+    fromCol,
+    toRow,
+    toCol,
+    capturedPiece
+)
+});
+    // Last Move
     lastMove = {
         piece: movingPiece,
         fromRow,
@@ -314,18 +611,29 @@ function saveMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
         toRow,
         toCol
     };
-    // Reset on pawn move or capture
-if (
-    movingPiece === "♙" ||
-    movingPiece === "♟" ||
-    capturedPiece !== ""
-) {
-    halfMoveClock = 0;
-} else {
-    halfMoveClock++;
-}
+    lastMoveHighlight = {
+    fromRow,
+    fromCol,
+    toRow,
+    toCol
+};
 
-    // Reset
+    // ======================
+    // 50-Move Rule
+    // ======================
+    if (
+        movingPiece === "♙" ||
+        movingPiece === "♟" ||
+        capturedPiece !== ""
+    ) {
+        halfMoveClock = 0;
+    } else {
+        halfMoveClock++;
+    }
+
+    // ======================
+    // En Passant
+    // ======================
     enPassantSquare = null;
 
     // White pawn moved 2 squares
@@ -345,7 +653,15 @@ if (
     ) {
         enPassantSquare = [2, fromCol];
     }
-  console.log(enPassantSquare);
+
+    // ======================
+    // Threefold Repetition
+    // ======================
+    positionHistory.push(JSON.stringify(board));
+
+    // Temporary Debug
+    console.log(positionHistory.length);
+
 }
 function finishTurn() {
 
@@ -377,6 +693,23 @@ function getRemainingPieces() {
     }
 
     return pieces;
+
+}
+function isThreefoldRepetition() {
+
+    const currentPosition = JSON.stringify(board);
+
+    let count = 0;
+
+    for (const position of positionHistory) {
+
+        if (position === currentPosition) {
+            count++;
+        }
+
+    }
+
+    return count >= 3;
 
 }
 function isInsufficientMaterial() {
@@ -420,6 +753,9 @@ function isInsufficientMaterial() {
 console.log(getRemainingPieces());
 function checkGameState() {
 
+    // ======================
+    // Check / Checkmate
+    // ======================
     if (isKingInCheck(currentPlayer)) {
 
         if (hasAnyLegalMove(currentPlayer)) {
@@ -430,28 +766,60 @@ function checkGameState() {
 
             alert("Checkmate!");
 
+            return;
         }
 
-    } else {
+    }
+
+    // ======================
+    // Stalemate
+    // ======================
+    else {
 
         if (!hasAnyLegalMove(currentPlayer)) {
 
             alert("Stalemate!");
 
+            return;
         }
 
     }
+
+    // ======================
     // 50-Move Rule
+    // ======================
     if (halfMoveClock >= 100) {
-    alert("Draw by 50-Move Rule!");
-}
+
+        alert("Draw by 50-Move Rule!");
+
+        return;
+
+    }
+
+    // ======================
+    // Threefold Repetition
+    // ======================
+    if (isThreefoldRepetition()) {
+
+    alert("Draw by Threefold Repetition!");
+
+    return;
 
 }
-// Insufficient Material
-if (isInsufficientMaterial()) {
-    alert("Draw by Insufficient Material!");
+
+    // ======================
+    // Insufficient Material
+    // ======================
+    if (isInsufficientMaterial()) {
+
+        alert("Draw by Insufficient Material!");
+
+        return;
+
+    }
+
 }
-function makeMove(fromRow, fromCol, toRow, toCol) {
+async function makeMove(fromRow, fromCol, toRow, toCol) {
 
     boardHistory.push(JSON.parse(JSON.stringify(board)));
 
@@ -461,8 +829,23 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
     // Track king & rook movement
     trackPieceMovement(movingPiece, fromRow, fromCol);
 
-    // Execute move
-    executeMove(movingPiece, fromRow, fromCol, toRow, toCol);
+    // Animate first
+await animateMove(
+    movingPiece,
+    fromRow,
+    fromCol,
+    toRow,
+    toCol
+);
+
+// Then update board
+executeMove(
+    movingPiece,
+    fromRow,
+    fromCol,
+    toRow,
+    toCol
+);
 
     // Validate move
     if (!validateMove(
@@ -495,6 +878,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
 
     // Update UI
     updateMoveHistory();
+    updateCapturedPieces();
     renderBoard();
 
     return true;
@@ -530,21 +914,103 @@ function undoMove() {
 }
 function updateMoveHistory() {
 
-    const movesDiv = document.getElementById("moves");
+    const movesBody = document.getElementById("moves");
 
-    movesDiv.innerHTML = "";
+    movesBody.innerHTML = "";
 
-    moveHistory.forEach((move, index) => {
+    for (let i = 0; i < moveHistory.length; i += 2) {
 
-        movesDiv.innerHTML +=
-            (index + 1) +
-            ". " +
-            move.from +
-            " → " +
-            move.to +
-            "<br>";
+        const row = document.createElement("tr");
 
-    });
+        const moveNumber = document.createElement("td");
+        moveNumber.textContent = (i / 2) + 1;
+
+        const whiteMove = document.createElement("td");
+        whiteMove.textContent =
+         moveHistory[i].notation;
+
+        const blackMove = document.createElement("td");
+
+        if (i + 1 < moveHistory.length) {
+
+            blackMove.textContent =
+             moveHistory[i+1].notation;
+
+        }
+
+        row.appendChild(moveNumber);
+        row.appendChild(whiteMove);
+        row.appendChild(blackMove);
+
+        movesBody.appendChild(row);
+
+    }
+
+    // Auto Scroll
+    movesBody.parentElement.scrollTop =
+        movesBody.parentElement.scrollHeight;
+
+}
+function updateCapturedPieces() {
+
+    capturedWhite.innerHTML = "";
+    capturedBlack.innerHTML = "";
+
+    const whiteCounts = {
+        "♕":0,
+        "♖":0,
+        "♗":0,
+        "♘":0,
+        "♙":0
+    };
+
+    const blackCounts = {
+        "♛":0,
+        "♜":0,
+        "♝":0,
+        "♞":0,
+        "♟":0
+    };
+
+    for (const move of moveHistory) {
+
+        if (move.captured === "") continue;
+
+        if (isWhitePiece(move.captured)) {
+
+            whiteCounts[move.captured]++;
+
+        } else {
+
+            blackCounts[move.captured]++;
+
+        }
+
+    }
+
+    function render(container, counts) {
+
+        for (const piece in counts) {
+
+            if (counts[piece] === 0) continue;
+
+            const item = document.createElement("div");
+
+            item.className = "captured-item";
+
+            item.innerHTML = `
+                <span class="captured-piece">${piece}</span>
+                <span class="captured-count">×${counts[piece]}</span>
+            `;
+
+            container.appendChild(item);
+
+        }
+
+    }
+
+    render(capturedBlack, blackCounts);
+    render(capturedWhite, whiteCounts);
 
 }
 function getWhitePawnMoves(row, col) {

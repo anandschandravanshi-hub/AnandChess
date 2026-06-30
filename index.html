@@ -7,18 +7,102 @@
 
     <link rel="stylesheet" href="style.css">
 </head>
+<div id="game-modal" class="hidden">
+
+    <div class="modal-content">
+
+        <h2 id="modal-title"></h2>
+
+        <p id="modal-message"></p>
+
+        <button id="new-game-btn">
+            New Game
+        </button>
+
+    </div>
+
+</div>
 <body>
 
-    <div class="container">
+<div id="game-modal" class="hidden">
+
+    <div class="modal-content">
+
+        <h2 id="modal-title"></h2>
+
+        <p id="modal-message"></p>
+
+        <button id="new-game-btn">
+            New Game
+        </button>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div id="left-panel">
+
+        <div class="panel">
+            <h3>Captured Pieces</h3>
+
+            <div class="captured-section">
+                <p>Black Captured</p>
+                <div id="captured-black"></div>
+            </div>
+
+            <div class="captured-section">
+                <p>White Captured</p>
+                <div id="captured-white"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="game">
+
         <h1>Anand Chess ♟️</h1>
 
         <div id="chessboard"></div>
-        <div id="history">
-    <h3>Move History</h3>
-    <div id="moves"></div>
+
+        <div id="status-bar">
+            <div id="turn-status">⚪ White to Move</div>
+            <div id="move-count">Move: 1</div>
+            <div id="game-status">Normal</div>
+        </div>
+
     </div>
 
-    <script src="script.js"></script>
+    <div id="history">
+
+        <h3>Move History</h3>
+
+       <table id="moves-table">
+
+    <thead>
+
+        <tr>
+
+            <th>#</th>
+            <th>White</th>
+            <th>Black</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody id="moves"></tbody>
+
+</table>
+
+</div>
+
+
+</body>
+
+<script src="script.js"></script>
 
 </body>
 </html>
