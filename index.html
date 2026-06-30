@@ -1,108 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Anand Chess</title>
 
     <link rel="stylesheet" href="style.css">
+
 </head>
-<div id="game-modal" class="hidden">
 
-    <div class="modal-content">
-
-        <h2 id="modal-title"></h2>
-
-        <p id="modal-message"></p>
-
-        <button id="new-game-btn">
-            New Game
-        </button>
-
-    </div>
-
-</div>
 <body>
 
-<div id="game-modal" class="hidden">
+    <!-- Game Modal -->
 
-    <div class="modal-content">
+    <div id="game-modal" class="hidden">
 
-        <h2 id="modal-title"></h2>
+        <div class="modal-content">
 
-        <p id="modal-message"></p>
+            <h2 id="modal-title"></h2>
 
-        <button id="new-game-btn">
-            New Game
-        </button>
+            <p id="modal-message"></p>
 
-    </div>
-
-</div>
-
-<div class="container">
-
-    <div id="left-panel">
-
-        <div class="panel">
-            <h3>Captured Pieces</h3>
-
-            <div class="captured-section">
-                <p>Black Captured</p>
-                <div id="captured-black"></div>
-            </div>
-
-            <div class="captured-section">
-                <p>White Captured</p>
-                <div id="captured-white"></div>
-            </div>
+            <button id="modal-new-game-btn">
+                New Game
+            </button>
 
         </div>
 
     </div>
 
-    <div class="game">
+    <!-- Main Container -->
 
-        <h1>Anand Chess ♟️</h1>
+    <div class="container">
 
-        <div id="chessboard"></div>
+        <!-- LEFT PANEL -->
 
-        <div id="status-bar">
-            <div id="turn-status">⚪ White to Move</div>
-            <div id="move-count">Move: 1</div>
-            <div id="game-status">Normal</div>
+        <div id="left-panel">
+
+            <!-- Logo -->
+
+            <div class="panel logo-panel">
+
+                <div class="logo-title">
+
+                    <span class="logo-icon">👑</span>
+
+                    <span class="logo-name">
+                        ANAND CHESS
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Captured Pieces -->
+
+            <div class="panel" id="captured-panel">
+
+                <h3>Captured Pieces</h3>
+
+                <div class="captured-section">
+
+                    <p>Black Captured</p>
+
+                    <div id="captured-black"></div>
+
+                </div>
+
+                <div class="captured-section">
+
+                    <p>White Captured</p>
+
+                    <div id="captured-white"></div>
+
+                </div>
+
+            </div>
+
+            <!-- Game Controls -->
+
+            <div class="panel" id="controls-panel">
+
+                <h3>Game Controls</h3>
+
+                <button id="new-game-btn" class="control-btn">
+                    ➕ New Game
+                </button>
+
+                <button id="undo-btn" class="control-btn">
+                    ↩ Undo Move
+                </button>
+
+                <button id="flip-btn" class="control-btn">
+                    🔄 Flip Board
+                </button>
+
+                <button id="settings-btn" class="control-btn">
+                    ⚙ Settings
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- CENTER -->
+
+        <div class="game">
+
+            <div id="chessboard"></div>
+
+            <div id="status-bar">
+
+                <div id="turn-status">
+                    ⚪ White to Move
+                </div>
+
+                <div id="move-count">
+                    Move: 1
+                </div>
+
+                <div id="game-status">
+                    Normal
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+
+        <div id="history" class="panel">
+
+            <h3>Move History</h3>
+
+            <div class="history-tabs">
+
+                <button id="moves-tab" class="tab active">
+                  Moves
+                </button>
+
+                <button id="analysis-tab" class="tab">
+                  Analysis
+                </button>
+
+</div>
+
+<div id="moves"></div>
+<div class="history-controls">
+
+    <button id="first-move-btn">⏮</button>
+
+    <button id="prev-move-btn">◀</button>
+
+    <button id="next-move-btn">▶</button>
+
+    <button id="last-move-btn">⏭</button>
+
+</div>
+
         </div>
 
     </div>
 
-    <div id="history">
-
-        <h3>Move History</h3>
-
-       <table id="moves-table">
-
-    <thead>
-
-        <tr>
-
-            <th>#</th>
-            <th>White</th>
-            <th>Black</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody id="moves"></tbody>
-
-</table>
-
-</div>
-
+    <script src="script.js"></script>
 
 </body>
 
-<script src="script.js"></script>
-
-</body>
 </html>

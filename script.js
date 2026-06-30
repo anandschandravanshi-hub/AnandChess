@@ -39,6 +39,9 @@ let halfMoveClock = 0;
 let positionHistory = [];
 let lastMoveHighlight = null;
 let boardHistory = [];
+let currentPosition = -1;
+let currentHistoryIndex = -1;
+let historyMode = false;
 
 function animateMove(toRow, toCol) {
 
@@ -305,6 +308,7 @@ function handleClick(row, col) {
 
     // Generate legal moves
     legalMoves = getLegalMoves(piece, row, col);
+    
 
 renderBoard();
 }
@@ -821,7 +825,18 @@ function checkGameState() {
 }
 async function makeMove(fromRow, fromCol, toRow, toCol) {
 
-    boardHistory.push(JSON.parse(JSON.stringify(board)));
+    boardHistory.push({
+
+    board: JSON.parse(JSON.stringify(board)),
+
+    currentPlayer: currentPlayer,
+
+    lastMoveHighlight: lastMoveHighlight
+        ? { ...lastMoveHighlight }
+        : null
+
+});
+    currentPosition = boardHistory.length - 1;
 
     const movingPiece = board[fromRow][fromCol];
     const capturedPiece = board[toRow][toCol];
@@ -890,17 +905,22 @@ function undoMove() {
         return;
     }
 
-    const previousBoard = boardHistory.pop();
+    const previousState = boardHistory.pop();
+    currentPosition = boardHistory.length - 1;
 
     for (let row = 0; row < 8; row++) {
 
-        for (let col = 0; col < 8; col++) {
+    for (let col = 0; col < 8; col++) {
 
-            board[row][col] = previousBoard[row][col];
-
-        }
+        board[row][col] = previousState.board[row][col];
 
     }
+
+}
+
+currentPlayer = previousState.currentPlayer;
+
+lastMoveHighlight = previousState.lastMoveHighlight;
 
     moveHistory.pop();
 
@@ -914,41 +934,35 @@ function undoMove() {
 }
 function updateMoveHistory() {
 
-    const movesBody = document.getElementById("moves");
+    const movesDiv = document.getElementById("moves");
 
-    movesBody.innerHTML = "";
+    movesDiv.innerHTML = "";
 
     for (let i = 0; i < moveHistory.length; i += 2) {
 
-        const row = document.createElement("tr");
+        const row = document.createElement("div");
 
-        const moveNumber = document.createElement("td");
-        moveNumber.textContent = (i / 2) + 1;
+        row.className = "move-row";
 
-        const whiteMove = document.createElement("td");
-        whiteMove.textContent =
-         moveHistory[i].notation;
+        const moveNumber = document.createElement("div");
+        moveNumber.className = "move-number";
+        moveNumber.textContent = (Math.floor(i / 2) + 1) + ".";
 
-        const blackMove = document.createElement("td");
+        const whiteMove = document.createElement("div");
+        whiteMove.className = "white-move";
+        whiteMove.textContent = moveHistory[i]?.notation || "";
 
-        if (i + 1 < moveHistory.length) {
-
-            blackMove.textContent =
-             moveHistory[i+1].notation;
-
-        }
+        const blackMove = document.createElement("div");
+        blackMove.className = "black-move";
+        blackMove.textContent = moveHistory[i + 1]?.notation || "";
 
         row.appendChild(moveNumber);
         row.appendChild(whiteMove);
         row.appendChild(blackMove);
 
-        movesBody.appendChild(row);
+        movesDiv.appendChild(row);
 
     }
-
-    // Auto Scroll
-    movesBody.parentElement.scrollTop =
-        movesBody.parentElement.scrollHeight;
 
 }
 function updateCapturedPieces() {
@@ -1646,6 +1660,72 @@ function isLegalMove(row, col) {
 }
 console.log(lastMove);
 renderBoard();
+const movesTab = document.getElementById("moves-tab");
+const analysisTab = document.getElementById("analysis-tab");
+
+movesTab.addEventListener("click", () => {
+
+    movesTab.classList.add("active");
+    analysisTab.classList.remove("active");
+
+});
+
+analysisTab.addEventListener("click", () => {
+
+    analysisTab.classList.add("active");
+    movesTab.classList.remove("active");
+
+});
+// ==========================
+// New Game Button
+// ==========================
+
+document
+.getElementById("new-game-btn")
+.addEventListener("click", () => {
+
+    alert("Coming Soon");
+
+});
+
+
+// ==========================
+// Undo Button
+// ==========================
+
+document
+.getElementById("undo-btn")
+.addEventListener("click", () => {
+
+    undoMove();
+
+});
+
+
+// ==========================
+// Flip Board Button
+// ==========================
+
+document
+.getElementById("flip-btn")
+.addEventListener("click", () => {
+
+    alert("Coming Soon");
+
+});
+
+
+// ==========================
+// Settings Button
+// ==========================
+
+document
+.getElementById("settings-btn")
+.addEventListener("click", () => {
+
+    alert("Coming Soon");
+
+});
 document.addEventListener("keydown", function(event){
 
     if(event.ctrlKey && event.key.toLowerCase() === "z"){
@@ -1655,5 +1735,52 @@ document.addEventListener("keydown", function(event){
         undoMove();
 
     }
+
+});
+const firstMoveBtn = document.getElementById("first-move-btn");
+const prevMoveBtn = document.getElementById("prev-move-btn");
+const nextMoveBtn = document.getElementById("next-move-btn");
+const lastMoveBtn = document.getElementById("last-move-btn");
+firstMoveBtn.addEventListener("click", () => {
+
+    if (boardHistory.length === 0) {
+        return;
+    }
+
+    const firstState = boardHistory[0];
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            board[row][col] = firstState.board[row][col];
+
+        }
+
+    }
+
+    currentPlayer = firstState.currentPlayer;
+
+    lastMoveHighlight = firstState.lastMoveHighlight;
+
+    renderBoard();
+
+});
+
+prevMoveBtn.addEventListener("click", () => {
+
+    console.log("Previous button clicked");
+
+});
+
+nextMoveBtn.addEventListener("click", () => {
+
+    console.log("Next button clicked");
+
+});
+
+lastMoveBtn.addEventListener("click", () => {
+
+    console.log("Last button clicked");
 
 });
