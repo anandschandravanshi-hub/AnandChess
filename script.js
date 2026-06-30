@@ -825,18 +825,7 @@ function checkGameState() {
 }
 async function makeMove(fromRow, fromCol, toRow, toCol) {
 
-    boardHistory.push({
-
-    board: JSON.parse(JSON.stringify(board)),
-
-    currentPlayer: currentPlayer,
-
-    lastMoveHighlight: lastMoveHighlight
-        ? { ...lastMoveHighlight }
-        : null
-
-});
-    currentPosition = boardHistory.length - 1;
+   
 
     const movingPiece = board[fromRow][fromCol];
     const capturedPiece = board[toRow][toCol];
@@ -861,6 +850,18 @@ executeMove(
     toRow,
     toCol
 );
+ boardHistory.push({
+
+    board: JSON.parse(JSON.stringify(board)),
+
+    currentPlayer: currentPlayer,
+
+    lastMoveHighlight: lastMoveHighlight
+        ? { ...lastMoveHighlight }
+        : null
+
+});
+    currentPosition = boardHistory.length - 1;
 
     // Validate move
     if (!validateMove(
@@ -906,6 +907,7 @@ function undoMove() {
     }
 
     const previousState = boardHistory.pop();
+    
     currentPosition = boardHistory.length - 1;
 
     for (let row = 0; row < 8; row++) {
@@ -930,6 +932,7 @@ lastMoveHighlight = previousState.lastMoveHighlight;
 
     updateMoveHistory();
     renderBoard();
+    console.log("Current Position:", currentPosition);
 
 }
 function updateMoveHistory() {
@@ -1769,7 +1772,40 @@ firstMoveBtn.addEventListener("click", () => {
 
 prevMoveBtn.addEventListener("click", () => {
 
-    console.log("Previous button clicked");
+    if (currentPosition <= 0) {
+        return;
+    }
+
+    currentPosition--;
+
+    const state = boardHistory[currentPosition];
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            board[row][col] = state.board[row][col];
+
+        }
+
+    }
+
+    currentPlayer = state.currentPlayer;
+
+    lastMoveHighlight = state.lastMoveHighlight;
+    boardHistory.push({
+
+    board: JSON.parse(JSON.stringify(board)),
+
+    currentPlayer: currentPlayer,
+
+    lastMoveHighlight: null
+
+});
+
+currentPosition = 0;
+
+    renderBoard();
 
 });
 
