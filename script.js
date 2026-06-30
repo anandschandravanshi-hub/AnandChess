@@ -108,99 +108,102 @@ function handleClick(row, col) {
 
 renderBoard();
 }
-function makeMove(fromRow, fromCol, toRow, toCol) {
-    boardHistory.push(JSON.parse(JSON.stringify(board)));
-    const movingPiece = board[fromRow][fromCol];
+function trackPieceMovement(movingPiece, fromRow, fromCol) {
+
     // Track King movement
-if (movingPiece === "♔") {
-    whiteKingMoved = true;
-}
-
-if (movingPiece === "♚") {
-    blackKingMoved = true;
-}
-
-// Track White Rooks
-if (movingPiece === "♖") {
-
-    if (fromRow === 7 && fromCol === 0) {
-        whiteLeftRookMoved = true;
+    if (movingPiece === "♔") {
+        whiteKingMoved = true;
     }
 
-    if (fromRow === 7 && fromCol === 7) {
-        whiteRightRookMoved = true;
+    if (movingPiece === "♚") {
+        blackKingMoved = true;
+    }
+
+    // Track White Rooks
+    if (movingPiece === "♖") {
+
+        if (fromRow === 7 && fromCol === 0) {
+            whiteLeftRookMoved = true;
+        }
+
+        if (fromRow === 7 && fromCol === 7) {
+            whiteRightRookMoved = true;
+        }
+
+    }
+
+    // Track Black Rooks
+    if (movingPiece === "♜") {
+
+        if (fromRow === 0 && fromCol === 0) {
+            blackLeftRookMoved = true;
+        }
+
+        if (fromRow === 0 && fromCol === 7) {
+            blackRightRookMoved = true;
+        }
+
     }
 
 }
+function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
 
-// Track Black Rooks
-if (movingPiece === "♜") {
-
-    if (fromRow === 0 && fromCol === 0) {
-        blackLeftRookMoved = true;
-    }
-
-    if (fromRow === 0 && fromCol === 7) {
-        blackRightRookMoved = true;
-    }
-
-}
-    const capturedPiece = board[toRow][toCol];
-
-    // Temporary move
+    // Normal move
     board[toRow][toCol] = movingPiece;
     board[fromRow][fromCol] = "";
-// ======================
-// CASTLING
-// ======================
 
-// White King Side
-if (
-    movingPiece === "♔" &&
-    fromRow === 7 &&
-    fromCol === 4 &&
-    toRow === 7 &&
-    toCol === 6
-) {
-    board[7][5] = "♖";
-    board[7][7] = "";
-}
+    // ======================
+    // CASTLING
+    // ======================
 
-// White Queen Side
-if (
-    movingPiece === "♔" &&
-    fromRow === 7 &&
-    fromCol === 4 &&
-    toRow === 7 &&
-    toCol === 2
-) {
-    board[7][3] = "♖";
-    board[7][0] = "";
-}
+    // White King Side
+    if (
+        movingPiece === "♔" &&
+        fromRow === 7 &&
+        fromCol === 4 &&
+        toRow === 7 &&
+        toCol === 6
+    ) {
+        board[7][5] = "♖";
+        board[7][7] = "";
+    }
 
-// Black King Side
-if (
-    movingPiece === "♚" &&
-    fromRow === 0 &&
-    fromCol === 4 &&
-    toRow === 0 &&
-    toCol === 6
-) {
-    board[0][5] = "♜";
-    board[0][7] = "";
-}
+    // White Queen Side
+    if (
+        movingPiece === "♔" &&
+        fromRow === 7 &&
+        fromCol === 4 &&
+        toRow === 7 &&
+        toCol === 2
+    ) {
+        board[7][3] = "♖";
+        board[7][0] = "";
+    }
 
-// Black Queen Side
-if (
-    movingPiece === "♚" &&
-    fromRow === 0 &&
-    fromCol === 4 &&
-    toRow === 0 &&
-    toCol === 2
-) {
-    board[0][3] = "♜";
-    board[0][0] = "";
-}
+    // Black King Side
+    if (
+        movingPiece === "♚" &&
+        fromRow === 0 &&
+        fromCol === 4 &&
+        toRow === 0 &&
+        toCol === 6
+    ) {
+        board[0][5] = "♜";
+        board[0][7] = "";
+    }
+
+    // Black Queen Side
+    if (
+        movingPiece === "♚" &&
+        fromRow === 0 &&
+        fromCol === 4 &&
+        toRow === 0 &&
+        toCol === 2
+    ) {
+        board[0][3] = "♜";
+        board[0][0] = "";
+    }
+
     // Auto Promotion
     if (movingPiece === "♙" && toRow === 0) {
         board[toRow][toCol] = "♕";
@@ -209,6 +212,9 @@ if (
     if (movingPiece === "♟" && toRow === 7) {
         board[toRow][toCol] = "♛";
     }
+
+}
+function validateMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
 
     // Illegal move?
     if (isKingInCheck(currentPlayer)) {
@@ -223,49 +229,112 @@ if (
         return false;
     }
 
-    // Save move history
+    return true;
+
+}
+function saveMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
+
     moveHistory.push({
         piece: movingPiece,
         from: files[fromCol] + (8 - fromRow),
         to: files[toCol] + (8 - toRow),
         captured: capturedPiece
     });
+
     lastMove = {
-    piece: movingPiece,
-    fromRow,
-    fromCol,
-    toRow,
-    toCol
-};
+        piece: movingPiece,
+        fromRow,
+        fromCol,
+        toRow,
+        toCol
+    };
+
+}
+function finishTurn() {
 
     selectedRow = null;
     selectedCol = null;
+
     legalMoves = [];
 
-    currentPlayer = currentPlayer === "white"
+    currentPlayer =
+        currentPlayer === "white"
         ? "black"
         : "white";
+
+}
+function checkGameState() {
+
     if (isKingInCheck(currentPlayer)) {
 
-    if (hasAnyLegalMove(currentPlayer)) {
+        if (hasAnyLegalMove(currentPlayer)) {
 
-        alert("Check!");
+            alert("Check!");
+
+        } else {
+
+            alert("Checkmate!");
+
+        }
 
     } else {
 
-        alert("Checkmate!");
+        if (!hasAnyLegalMove(currentPlayer)) {
+
+            alert("Stalemate!");
+
+        }
 
     }
 
 }
+function makeMove(fromRow, fromCol, toRow, toCol) {
 
+    boardHistory.push(JSON.parse(JSON.stringify(board)));
+
+    const movingPiece = board[fromRow][fromCol];
+    const capturedPiece = board[toRow][toCol];
+
+    // Track king & rook movement
+    trackPieceMovement(movingPiece, fromRow, fromCol);
+
+    // Execute move
+    executeMove(movingPiece, fromRow, fromCol, toRow, toCol);
+
+    // Validate move
+    if (!validateMove(
+        movingPiece,
+        capturedPiece,
+        fromRow,
+        fromCol,
+        toRow,
+        toCol
+    )) {
+        return false;
+    }
+
+    // Save move
+    saveMove(
+        movingPiece,
+        capturedPiece,
+        fromRow,
+        fromCol,
+        toRow,
+        toCol
+    );
+
+    // Finish turn
+    finishTurn();
+
+    // Check game state
+    checkGameState();
+
+    // Update UI
     updateMoveHistory();
-    if (isKingInCheck(currentPlayer) && !hasAnyLegalMove(currentPlayer)) {
-    alert("Checkmate!");
-}
     renderBoard();
 
     return true;
+
 }
 function undoMove() {
 
@@ -530,6 +599,30 @@ function getQueenMoves(row, col, color) {
     ];
 
 }
+function getKingAttackSquares(row, col) {
+
+    let attacks = [];
+
+    const directions = [
+        [-1,-1],[-1,0],[-1,1],
+        [0,-1],         [0,1],
+        [1,-1],[1,0],[1,1]
+    ];
+
+    for (const [dr, dc] of directions) {
+
+        const r = row + dr;
+        const c = col + dc;
+
+        if (r >= 0 && r < 8 && c >= 0 && c < 8) {
+            attacks.push([r, c]);
+        }
+
+    }
+
+    return attacks;
+
+}
 function getKingMoves(row, col, color) {
 
     let moves = [];
@@ -540,95 +633,120 @@ function getKingMoves(row, col, color) {
         [1,-1],[1,0],[1,1]
     ];
 
-    for(const [dr,dc] of directions){
+    for (const [dr, dc] of directions) {
 
         let r = row + dr;
         let c = col + dc;
 
-        if(r<0 || r>7 || c<0 || c>7){
+        if (r < 0 || r > 7 || c < 0 || c > 7) {
             continue;
         }
 
         let target = board[r][c];
 
-        if(target===""){
-            moves.push([r,c]);
+        if (target === "") {
+            moves.push([r, c]);
         }
 
-        else if(currentPlayer==="white"){
+        else if (color === "white") {
 
-            if(isBlackPiece(target)){
-                moves.push([r,c]);
+            if (isBlackPiece(target)) {
+                moves.push([r, c]);
             }
 
         }
 
-        else{
+        else if (color === "black") {
 
-            if(isWhitePiece(target)){
-                moves.push([r,c]);
+            if (isWhitePiece(target)) {
+                moves.push([r, c]);
             }
 
         }
 
     }
-    // White King Side Castling
-if (
-    color === "white" &&
-    !whiteKingMoved &&
-    !whiteRightRookMoved &&
-    row === 7 &&
-    col === 4 &&
-    board[7][5] === "" &&
-    board[7][6] === "" &&
-    board[7][7] === "♖"
-) {
-    moves.push([7, 6]);
-}
 
-// White Queen Side Castling
-if (
-    color === "white" &&
-    !whiteKingMoved &&
-    !whiteLeftRookMoved &&
-    row === 7 &&
-    col === 4 &&
-    board[7][1] === "" &&
-    board[7][2] === "" &&
-    board[7][3] === "" &&
-    board[7][0] === "♖"
-) {
-    moves.push([7, 2]);
-}
+    // ======================
+    // WHITE KING SIDE
+    // ======================
 
-// Black King Side Castling
-if (
-    color === "black" &&
-    !blackKingMoved &&
-    !blackRightRookMoved &&
-    row === 0 &&
-    col === 4 &&
-    board[0][5] === "" &&
-    board[0][6] === "" &&
-    board[0][7] === "♜"
-) {
-    moves.push([0, 6]);
-}
+    if (
+        color === "white" &&
+        !whiteKingMoved &&
+        !whiteRightRookMoved &&
+        !isKingInCheck("white") &&
+        !isSquareAttacked(7, 5, "black") &&
+        !isSquareAttacked(7, 6, "black") &&
+        row === 7 &&
+        col === 4 &&
+        board[7][5] === "" &&
+        board[7][6] === "" &&
+        board[7][7] === "♖"
+    ) {
+        moves.push([7, 6]);
+    }
 
-// Black Queen Side Castling
-if (
-    color === "black" &&
-    !blackKingMoved &&
-    !blackLeftRookMoved &&
-    row === 0 &&
-    col === 4 &&
-    board[0][1] === "" &&
-    board[0][2] === "" &&
-    board[0][3] === "" &&
-    board[0][0] === "♜"
-) {
-    moves.push([0, 2]);
-}
+    // ======================
+    // WHITE QUEEN SIDE
+    // ======================
+
+    if (
+        color === "white" &&
+        !whiteKingMoved &&
+        !whiteLeftRookMoved &&
+        !isKingInCheck("white") &&
+        !isSquareAttacked(7, 3, "black") &&
+        !isSquareAttacked(7, 2, "black") &&
+        row === 7 &&
+        col === 4 &&
+        board[7][1] === "" &&
+        board[7][2] === "" &&
+        board[7][3] === "" &&
+        board[7][0] === "♖"
+    ) {
+        moves.push([7, 2]);
+    }
+
+    // ======================
+    // BLACK KING SIDE
+    // ======================
+
+    if (
+        color === "black" &&
+        !blackKingMoved &&
+        !blackRightRookMoved &&
+        !isKingInCheck("black") &&
+        !isSquareAttacked(0, 5, "white") &&
+        !isSquareAttacked(0, 6, "white") &&
+        row === 0 &&
+        col === 4 &&
+        board[0][5] === "" &&
+        board[0][6] === "" &&
+        board[0][7] === "♜"
+    ) {
+        moves.push([0, 6]);
+    }
+
+    // ======================
+    // BLACK QUEEN SIDE
+    // ======================
+
+    if (
+        color === "black" &&
+        !blackKingMoved &&
+        !blackLeftRookMoved &&
+        !isKingInCheck("black") &&
+        !isSquareAttacked(0, 3, "white") &&
+        !isSquareAttacked(0, 2, "white") &&
+        row === 0 &&
+        col === 4 &&
+        board[0][1] === "" &&
+        board[0][2] === "" &&
+        board[0][3] === "" &&
+        board[0][0] === "♜"
+    ) {
+        moves.push([0, 2]);
+    }
 
     return moves;
 
@@ -755,10 +873,8 @@ function getAttackSquares(piece, row, col) {
             return getQueenMoves(row, col, "black");
 
         case "♔":
-        return getKingMoves(row, col, "white");
-
         case "♚":
-        return getKingMoves(row, col, "black");
+            return getKingAttackSquares(row, col);
 
         default:
             return [];
