@@ -28,6 +28,8 @@ const files = ["a","b","c","d","e","f","g","h"];
 let legalMoves = [];
 let moveHistory = [];
 let lastMove = null;
+let enPassantSquare = null;
+let halfMoveClock = 0;
 let boardHistory = [];
 
 function renderBoard() {
@@ -146,11 +148,70 @@ function trackPieceMovement(movingPiece, fromRow, fromCol) {
     }
 
 }
+function choosePromotion(color) {
+
+    let choice = prompt(
+`Promote Pawn
+
+Q = Queen
+R = Rook
+B = Bishop
+N = Knight`
+    );
+
+    if (!choice) choice = "Q";
+
+    choice = choice.toUpperCase();
+
+    if (color === "white") {
+
+        if (choice === "R") return "♖";
+        if (choice === "B") return "♗";
+        if (choice === "N") return "♘";
+
+        return "♕";
+
+    }
+
+    else {
+
+        if (choice === "R") return "♜";
+        if (choice === "B") return "♝";
+        if (choice === "N") return "♞";
+
+        return "♛";
+
+    }
+
+}
 function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
 
     // Normal move
     board[toRow][toCol] = movingPiece;
     board[fromRow][fromCol] = "";
+    // ======================
+// EN PASSANT
+// ======================
+
+// White En Passant
+if (
+    movingPiece === "♙" &&
+    enPassantSquare &&
+    toRow === enPassantSquare[0] &&
+    toCol === enPassantSquare[1]
+) {
+    board[toRow + 1][toCol] = "";
+}
+
+// Black En Passant
+if (
+    movingPiece === "♟" &&
+    enPassantSquare &&
+    toRow === enPassantSquare[0] &&
+    toCol === enPassantSquare[1]
+) {
+    board[toRow - 1][toCol] = "";
+}
 
     // ======================
     // CASTLING
@@ -204,14 +265,19 @@ function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
         board[0][0] = "";
     }
 
-    // Auto Promotion
-    if (movingPiece === "♙" && toRow === 0) {
-        board[toRow][toCol] = "♕";
-    }
+    // ======================
+// PAWN PROMOTION
+// ======================
 
-    if (movingPiece === "♟" && toRow === 7) {
-        board[toRow][toCol] = "♛";
-    }
+// White Promotion
+if (movingPiece === "♙" && toRow === 0) {
+    board[toRow][toCol] = choosePromotion("white");
+}
+
+// Black Promotion
+if (movingPiece === "♟" && toRow === 7) {
+    board[toRow][toCol] = choosePromotion("black");
+}
 
 }
 function validateMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
@@ -248,7 +314,38 @@ function saveMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
         toRow,
         toCol
     };
+    // Reset on pawn move or capture
+if (
+    movingPiece === "♙" ||
+    movingPiece === "♟" ||
+    capturedPiece !== ""
+) {
+    halfMoveClock = 0;
+} else {
+    halfMoveClock++;
+}
 
+    // Reset
+    enPassantSquare = null;
+
+    // White pawn moved 2 squares
+    if (
+        movingPiece === "♙" &&
+        fromRow === 6 &&
+        toRow === 4
+    ) {
+        enPassantSquare = [5, fromCol];
+    }
+
+    // Black pawn moved 2 squares
+    if (
+        movingPiece === "♟" &&
+        fromRow === 1 &&
+        toRow === 3
+    ) {
+        enPassantSquare = [2, fromCol];
+    }
+  console.log(enPassantSquare);
 }
 function finishTurn() {
 
@@ -263,6 +360,64 @@ function finishTurn() {
         : "white";
 
 }
+function getRemainingPieces() {
+
+    let pieces = [];
+
+    for (let row = 0; row < 8; row++) {
+
+        for (let col = 0; col < 8; col++) {
+
+            if (board[row][col] !== "") {
+                pieces.push(board[row][col]);
+            }
+
+        }
+
+    }
+
+    return pieces;
+
+}
+function isInsufficientMaterial() {
+
+    const pieces = getRemainingPieces();
+
+    // King vs King
+    if (
+        pieces.length === 2 &&
+        pieces.includes("♔") &&
+        pieces.includes("♚")
+    ) {
+        return true;
+    }
+
+    // King + Bishop vs King
+    if (
+        pieces.length === 3 &&
+        (
+            pieces.includes("♗") ||
+            pieces.includes("♝")
+        )
+    ) {
+        return true;
+    }
+
+    // King + Knight vs King
+    if (
+        pieces.length === 3 &&
+        (
+            pieces.includes("♘") ||
+            pieces.includes("♞")
+        )
+    ) {
+        return true;
+    }
+
+    return false;
+
+}
+console.log(getRemainingPieces());
 function checkGameState() {
 
     if (isKingInCheck(currentPlayer)) {
@@ -286,7 +441,15 @@ function checkGameState() {
         }
 
     }
+    // 50-Move Rule
+    if (halfMoveClock >= 100) {
+    alert("Draw by 50-Move Rule!");
+}
 
+}
+// Insufficient Material
+if (isInsufficientMaterial()) {
+    alert("Draw by Insufficient Material!");
 }
 function makeMove(fromRow, fromCol, toRow, toCol) {
 
@@ -325,6 +488,7 @@ function makeMove(fromRow, fromCol, toRow, toCol) {
 
     // Finish turn
     finishTurn();
+    console.log("Half Move:", halfMoveClock);
 
     // Check game state
     checkGameState();
@@ -413,7 +577,15 @@ function getWhitePawnMoves(row, col) {
     ) {
         moves.push([row - 1, col + 1]);
     }
-
+    // En Passant
+if (
+    row === 3 &&
+    enPassantSquare &&
+    Math.abs(col - enPassantSquare[1]) === 1 &&
+    enPassantSquare[0] === 2
+) {
+    moves.push([2, enPassantSquare[1]]);
+}
     return moves;
 }
 
@@ -447,6 +619,15 @@ function getBlackPawnMoves(row, col) {
     ) {
         moves.push([row + 1, col + 1]);
     }
+    // En Passant
+if (
+    row === 4 &&
+    enPassantSquare &&
+    Math.abs(col - enPassantSquare[1]) === 1 &&
+    enPassantSquare[0] === 5
+) {
+    moves.push([5, enPassantSquare[1]]);
+}
 
     return moves;
 }
