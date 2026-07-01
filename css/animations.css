@@ -1,0 +1,16 @@
+.flying-piece{
+
+    position:fixed;
+
+    font-size:52px;
+
+    pointer-events:none;
+
+    z-index:9999;
+
+    transition:
+        left .24s cubic-bezier(.22,.61,.36,1),
+        top .24s cubic-bezier(.22,.61,.36,1);
+
+}
+

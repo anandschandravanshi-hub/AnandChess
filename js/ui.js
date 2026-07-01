@@ -1,14 +1,19 @@
-// ===============================
-// Anand Chess
-// UI Elements
-// ===============================
+// ==================================================
+// Anand Chess - UI
+// DOM Elements
+// ==================================================
+
 const chessboard = document.getElementById("chessboard");
 
-const capturedWhite =
-    document.getElementById("captured-white");
+const capturedWhite = document.getElementById("captured-white");
 
-const capturedBlack =
-    document.getElementById("captured-black");
+const capturedBlack = document.getElementById("captured-black");
+
+const movesDiv = document.getElementById("moves");
+
+// ==================================================
+// Render Board
+// ==================================================
 
 function renderBoard() {
 
@@ -16,136 +21,211 @@ function renderBoard() {
 
     for (let displayRow = 0; displayRow < 8; displayRow++) {
 
-    for (let displayCol = 0; displayCol < 8; displayCol++) {
+        for (let displayCol = 0; displayCol < 8; displayCol++) {
 
-        const row = boardFlipped
-            ? 7 - displayRow
-            : displayRow;
+            const row = boardFlipped
+                ? 7 - displayRow
+                : displayRow;
 
-        const col = boardFlipped
-            ? 7 - displayCol
-            : displayCol;
+            const col = boardFlipped
+                ? 7 - displayCol
+                : displayCol;
+
+            const currentPiece = board[row][col];
 
             const square = document.createElement("div");
 
-            const boardRow = displayRow;
-            const boardCol = displayCol;
-
             square.classList.add("square");
 
+            // ==========================
             // Square Color
-            if ((row + col) % 2 === 0) {
-                square.classList.add("dark");
-            } else {
-                square.classList.add("light");
+            // ==========================
+
+            square.classList.add(
+                (row + col) % 2 === 0
+                    ? "dark"
+                    : "light"
+            );
+
+            // ==========================
+            // Data Attributes
+            // ==========================
+
+            square.dataset.row = row;
+
+            square.dataset.col = col;
+
+            square.dataset.square =
+                files[col] + (8 - row);
+
+            // ==========================
+            // Last Move Highlight
+            // ==========================
+
+            if (
+
+                lastMoveHighlight &&
+
+                (
+
+                    (row === lastMoveHighlight.fromRow &&
+                     col === lastMoveHighlight.fromCol)
+
+                    ||
+
+                    (row === lastMoveHighlight.toRow &&
+                     col === lastMoveHighlight.toCol)
+
+                )
+
+            ) {
+
+                square.classList.add(
+
+                    (row + col) % 2 === 0
+
+                        ? "last-move-dark"
+
+                        : "last-move-light"
+
+                );
+
             }
 
-            // Data Attributes
-           square.dataset.row = boardFlipped ? 7 - boardRow : boardRow;
-           square.dataset.col = boardFlipped ? 7 - boardCol : boardCol;
-            square.dataset.square = files[col] + (8 - row);
-
-            // ======================
-            // Last Move Highlight
-            // ======================
-            if (
-    lastMoveHighlight &&
-    (
-        (row === lastMoveHighlight.fromRow &&
-         col === lastMoveHighlight.fromCol) ||
-
-        (row === lastMoveHighlight.toRow &&
-         col === lastMoveHighlight.toCol)
-    )
-) {
-
-    if ((row + col) % 2 === 0) {
-        square.classList.add("last-move-dark");
-    } else {
-        square.classList.add("last-move-light");
-    }
-
-}
+            // ==========================
             // Piece
+            // ==========================
+
             const piece = document.createElement("div");
 
             piece.classList.add("piece");
-            if (isWhitePiece(board[row][col])) {
 
-    piece.classList.add("white-piece");
+            piece.textContent = currentPiece;
 
-}
+            if (isWhitePiece(currentPiece)) {
 
-if (isBlackPiece(board[row][col])) {
+                piece.classList.add("white-piece");
 
-    piece.classList.add("black-piece");
+            }
 
-}
+            if (isBlackPiece(currentPiece)) {
 
-            piece.textContent = board[row][col];
+                piece.classList.add("black-piece");
+
+            }
 
             square.appendChild(piece);
-            // Rank (1-8)
-if (col === 0) {
 
-    const rank = document.createElement("span");
+            // ==========================
+            // Coordinates
+            // ==========================
 
-    rank.className = "rank-coordinate";
+            if (col === 0) {
 
-    rank.textContent = 8 - row;
+                const rank = document.createElement("span");
 
-    square.appendChild(rank);
+                rank.className = "rank-coordinate";
 
-}
+                rank.textContent = 8 - row;
 
-// File (a-h)
-if (row === 7) {
+                square.appendChild(rank);
 
-    const file = document.createElement("span");
+            }
 
-    file.className = "file-coordinate";
+            if (row === 7) {
 
-    file.textContent = files[col];
+                const file = document.createElement("span");
 
-    square.appendChild(file);
+                file.className = "file-coordinate";
 
-}
+                file.textContent = files[col];
 
+                square.appendChild(file);
+
+            }
+
+            // ==========================
             // Selected Piece
-            if (row === selectedRow && col === selectedCol) {
+            // ==========================
+
+            if (
+
+                row === selectedRow &&
+                col === selectedCol
+
+            ) {
+
                 square.classList.add("selected");
+
             }
 
-            // Check Highlight
-            if (board[row][col] === "♔" && isKingInCheck("white")) {
-                square.style.boxShadow = "inset 0 0 0 4px red";
+            // ==========================
+            // King In Check
+            // ==========================
+
+            if (
+
+                currentPiece === "♔" &&
+                isKingInCheck("white")
+
+            ) {
+
+                square.style.boxShadow =
+                    "inset 0 0 0 4px red";
+
             }
 
-            if (board[row][col] === "♚" && isKingInCheck("black")) {
-                square.style.boxShadow = "inset 0 0 0 4px red";
+            if (
+
+                currentPiece === "♚" &&
+                isKingInCheck("black")
+
+            ) {
+
+                square.style.boxShadow =
+                    "inset 0 0 0 4px red";
+
             }
 
-            // Legal Move Highlight
+            // ==========================
+            // Legal Moves
+            // ==========================
+
             if (isLegalMove(row, col)) {
 
-    if (board[row][col] === "") {
+                if (currentPiece === "") {
 
-        const dot = document.createElement("div");
-        dot.classList.add("move-dot");
-        square.appendChild(dot);
+                    const dot = document.createElement("div");
 
-    } else {
+                    dot.className = "move-dot";
 
-        const ring = document.createElement("div");
-        ring.classList.add("capture-ring");
-        square.appendChild(ring);
+                    square.appendChild(dot);
 
-    }
+                }
 
-}
+                else {
 
-            // Click Event
-            square.addEventListener("click", () => handleClick(row, col));
+                    const ring = document.createElement("div");
+
+                    ring.className = "capture-ring";
+
+                    square.appendChild(ring);
+
+                }
+
+            }
+
+            // ==========================
+            // Click
+            // ==========================
+
+            square.addEventListener(
+
+                "click",
+
+                () => handleClick(row, col)
+
+            );
 
             chessboard.appendChild(square);
 
@@ -154,26 +234,37 @@ if (row === 7) {
     }
 
 }
+// ==================================================
+// Captured Pieces
+// ==================================================
+
 function updateCapturedPieces() {
 
     capturedWhite.innerHTML = "";
+
     capturedBlack.innerHTML = "";
 
     const whiteCounts = {
+
         "♕":0,
         "♖":0,
         "♗":0,
         "♘":0,
         "♙":0
+
     };
 
     const blackCounts = {
+
         "♛":0,
         "♜":0,
         "♝":0,
         "♞":0,
         "♟":0
+
     };
+
+    // Count Captured Pieces
 
     for (const move of moveHistory) {
 
@@ -191,34 +282,45 @@ function updateCapturedPieces() {
 
     }
 
-    function render(container, counts) {
+    renderCapturedPieces(capturedBlack, blackCounts);
 
-        for (const piece in counts) {
+    renderCapturedPieces(capturedWhite, whiteCounts);
 
-            if (counts[piece] === 0) continue;
+}
 
-            const item = document.createElement("div");
+// ==================================================
+// Render Captured Pieces
+// ==================================================
 
-            item.className = "captured-item";
+function renderCapturedPieces(container, counts) {
 
-            item.innerHTML = `
-                <span class="captured-piece">${piece}</span>
-                <span class="captured-count">×${counts[piece]}</span>
-            `;
+    for (const piece in counts) {
 
-            container.appendChild(item);
+        if (counts[piece] === 0) continue;
 
-        }
+        const item = document.createElement("div");
+
+        item.className = "captured-item";
+
+        item.innerHTML = `
+
+            <span class="captured-piece">${piece}</span>
+
+            <span class="captured-count">×${counts[piece]}</span>
+
+        `;
+
+        container.appendChild(item);
 
     }
 
-    render(capturedBlack, blackCounts);
-    render(capturedWhite, whiteCounts);
-
 }
-function updateMoveHistory() {
 
-    const movesDiv = document.getElementById("moves");
+// ==================================================
+// Move History
+// ==================================================
+
+function updateMoveHistory() {
 
     movesDiv.innerHTML = "";
 
@@ -228,27 +330,49 @@ function updateMoveHistory() {
 
         row.className = "move-row";
 
+        // Move Number
+
         const moveNumber = document.createElement("div");
+
         moveNumber.className = "move-number";
-        moveNumber.textContent = (Math.floor(i / 2) + 1) + ".";
+
+        moveNumber.textContent = `${Math.floor(i / 2) + 1}.`;
+
+        // White Move
 
         const whiteMove = document.createElement("div");
+
         whiteMove.className = "white-move";
+
         whiteMove.textContent = moveHistory[i]?.notation || "";
 
+        // Black Move
+
         const blackMove = document.createElement("div");
+
         blackMove.className = "black-move";
+
         blackMove.textContent = moveHistory[i + 1]?.notation || "";
 
-        row.appendChild(moveNumber);
-        row.appendChild(whiteMove);
-        row.appendChild(blackMove);
+        row.append(
+
+            moveNumber,
+
+            whiteMove,
+
+            blackMove
+
+        );
 
         movesDiv.appendChild(row);
 
     }
 
 }
+// ==================================================
+// Piece Animation
+// ==================================================
+
 function animateMove(piece, fromRow, fromCol, toRow, toCol) {
 
     const fromSquare = document.querySelector(
@@ -259,27 +383,35 @@ function animateMove(piece, fromRow, fromCol, toRow, toCol) {
         `[data-row="${toRow}"][data-col="${toCol}"]`
     );
 
-    if (!fromSquare || !toSquare) return Promise.resolve();
+    if (!fromSquare || !toSquare) {
+
+        return Promise.resolve();
+
+    }
 
     const fromRect = fromSquare.getBoundingClientRect();
+
     const toRect = toSquare.getBoundingClientRect();
 
     const pieceElement = fromSquare.querySelector(".piece");
 
     if (pieceElement) {
-    pieceElement.style.visibility = "hidden";
-}
+
+        pieceElement.style.visibility = "hidden";
+
+    }
 
     const clone = document.createElement("div");
 
     clone.className = "flying-piece";
+
     clone.textContent = piece;
 
     clone.style.left =
-    fromRect.left + (fromRect.width - 52) / 2 + "px";
+        fromRect.left + (fromRect.width - 52) / 2 + "px";
 
-clone.style.top =
-    fromRect.top + (fromRect.height - 52) / 2 + "px";
+    clone.style.top =
+        fromRect.top + (fromRect.height - 52) / 2 + "px";
 
     document.body.appendChild(clone);
 
@@ -288,33 +420,51 @@ clone.style.top =
         requestAnimationFrame(() => {
 
             clone.style.left =
-            toRect.left + (toRect.width - 52) / 2 + "px";
+                toRect.left + (toRect.width - 52) / 2 + "px";
 
             clone.style.top =
-            toRect.top + (toRect.height - 52) / 2 + "px";
+                toRect.top + (toRect.height - 52) / 2 + "px";
 
         });
 
-        clone.addEventListener("transitionend", () => {
+        clone.addEventListener(
 
-            clone.remove();
-            if (pieceElement) {
-    pieceElement.style.visibility = "visible";
-}
+            "transitionend",
 
-            resolve();
+            () => {
 
-        }, { once:true });
+                clone.remove();
+
+                if (pieceElement) {
+
+                    pieceElement.style.visibility = "visible";
+
+                }
+
+                resolve();
+
+            },
+
+            { once: true }
+
+        );
 
     });
 
 }
-function animateMove(toRow, toCol) {
+
+// ==================================================
+// Square Animation
+// ==================================================
+
+function animateSquare(row, col) {
 
     requestAnimationFrame(() => {
 
         const square = document.querySelector(
-            `[data-row="${toRow}"][data-col="${toCol}"]`
+
+            `[data-row="${row}"][data-col="${col}"]`
+
         );
 
         if (!square) return;
@@ -322,46 +472,11 @@ function animateMove(toRow, toCol) {
         square.style.transform = "scale(1.25)";
 
         setTimeout(() => {
+
             square.style.transform = "scale(1)";
+
         }, 180);
 
     });
 
 }
-function createBoard() {
-
-    chessboard.innerHTML = "";
-
-    for (let row = 0; row < 8; row++) {
-
-        for (let col = 0; col < 8; col++) {
-
-            const square = document.createElement("div");
-
-            square.classList.add("square");
-
-            if ((row + col) % 2 === 0) {
-                square.classList.add("dark");
-            }
-            else {
-                square.classList.add("light");
-            }
-
-            square.dataset.row = row;
-            square.dataset.col = col;
-
-            square.addEventListener(
-                "click",
-                () => handleClick(row, col)
-            );
-
-            chessboard.appendChild(square);
-
-        }
-
-    }
-
-}
-
-
-console.log("ui.js loaded");

@@ -1,305 +1,408 @@
-// ===============================
-// Anand Chess
-// Move Engine
-// ===============================
+// ==================================================
+// Move Generation
+// ==================================================
 
 function getLegalMoves(piece, row, col) {
 
     switch (piece) {
 
-        case "♙":
-            return getWhitePawnMoves(row, col);
+        case "♙": return getWhitePawnMoves(row, col);
+        case "♟": return getBlackPawnMoves(row, col);
 
-        case "♟":
-            return getBlackPawnMoves(row, col);
+        case "♘": return getKnightMoves(row, col, "white");
+        case "♞": return getKnightMoves(row, col, "black");
 
-        case "♘":
-            return getKnightMoves(row, col, "white");
+        case "♗": return getBishopMoves(row, col, "white");
+        case "♝": return getBishopMoves(row, col, "black");
 
-        case "♞":
-            return getKnightMoves(row, col, "black");
+        case "♖": return getRookMoves(row, col, "white");
+        case "♜": return getRookMoves(row, col, "black");
 
-        case "♗":
-            return getBishopMoves(row, col, "white");
+        case "♕": return getQueenMoves(row, col, "white");
+        case "♛": return getQueenMoves(row, col, "black");
 
-        case "♝":
-            return getBishopMoves(row, col, "black");
+        case "♔": return getKingMoves(row, col, "white");
+        case "♚": return getKingMoves(row, col, "black");
 
-        case "♖":
-            return getRookMoves(row, col, "white");
+        default: return [];
 
-        case "♜":
-            return getRookMoves(row, col, "black");
-
-        case "♕":
-            return getQueenMoves(row, col, "white");
-
-        case "♛":
-            return getQueenMoves(row, col, "black");
-
-        case "♔":
-        return getKingMoves(row, col, "white");
-
-        case "♚":
-        return getKingMoves(row, col, "black");
-        default:
-            return [];
     }
+
 }
+
+// ==================================================
+// Legal Move Check
+// ==================================================
+
 function isLegalMove(row, col) {
 
-    for (const move of legalMoves) {
+    return legalMoves.some(
 
-        if (move[0] === row && move[1] === col) {
-            return true;
-        }
+        ([moveRow, moveCol]) =>
 
-    }
+            moveRow === row && moveCol === col
 
-    return false;
+    );
+
 }
+
+// ==================================================
+// Make Move
+// ==================================================
+
 async function makeMove(fromRow, fromCol, toRow, toCol) {
 
-   
-
     const movingPiece = board[fromRow][fromCol];
+
     const capturedPiece = board[toRow][toCol];
 
-    // Track king & rook movement
+    // Track castling rights
+
     trackPieceMovement(movingPiece, fromRow, fromCol);
 
-    // Animate first
-await animateMove(
-    movingPiece,
-    fromRow,
-    fromCol,
-    toRow,
-    toCol
-);
+    // Animate move
 
-// Then update board
-executeMove(
-    movingPiece,
-    fromRow,
-    fromCol,
-    toRow,
-    toCol
-);
- boardHistory.push({
+    await animateMove(
 
-    board: JSON.parse(JSON.stringify(board)),
+        movingPiece,
 
-    currentPlayer: currentPlayer,
+        fromRow,
+        fromCol,
 
-    lastMoveHighlight: lastMoveHighlight
-        ? { ...lastMoveHighlight }
-        : null
+        toRow,
+        toCol
 
-});
+    );
+
+    // Update board
+
+    executeMove(
+
+        movingPiece,
+
+        fromRow,
+        fromCol,
+
+        toRow,
+        toCol
+
+    );
+
+    // Save board state
+
+    boardHistory.push({
+
+        board: JSON.parse(JSON.stringify(board)),
+
+        currentPlayer,
+
+        lastMoveHighlight: lastMoveHighlight
+            ? { ...lastMoveHighlight }
+            : null
+
+    });
+
     currentPosition = boardHistory.length - 1;
 
     // Validate move
-    if (!validateMove(
-        movingPiece,
-        capturedPiece,
-        fromRow,
-        fromCol,
-        toRow,
-        toCol
-    )) {
+
+    if (
+
+        !validateMove(
+
+            movingPiece,
+            capturedPiece,
+
+            fromRow,
+            fromCol,
+
+            toRow,
+            toCol
+
+        )
+
+    ) {
+
         return false;
+
     }
 
-    // Save move
+    // Save history
+
     saveMove(
+
         movingPiece,
         capturedPiece,
+
         fromRow,
         fromCol,
+
         toRow,
         toCol
+
     );
 
     // Finish turn
-    finishTurn();
-    console.log("Half Move:", halfMoveClock);
 
-    // Check game state
+    finishTurn();
+
+    // Update game state
+
     checkGameState();
 
-    // Update UI
+    // Refresh UI
+
     updateMoveHistory();
+
     updateCapturedPieces();
+
     renderBoard();
 
     return true;
 
 }
+
+// ==================================================
+// Execute Move
+// ==================================================
+
 function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
 
-    // Normal move
+    // ==========================
+    // Normal Move
+    // ==========================
+
     board[toRow][toCol] = movingPiece;
+
     board[fromRow][fromCol] = "";
-    // ======================
-// EN PASSANT
-// ======================
 
-// White En Passant
-if (
-    movingPiece === "♙" &&
-    enPassantSquare &&
-    toRow === enPassantSquare[0] &&
-    toCol === enPassantSquare[1]
-) {
-    board[toRow + 1][toCol] = "";
-}
+    // ==========================
+    // En Passant
+    // ==========================
 
-// Black En Passant
-if (
-    movingPiece === "♟" &&
-    enPassantSquare &&
-    toRow === enPassantSquare[0] &&
-    toCol === enPassantSquare[1]
-) {
-    board[toRow - 1][toCol] = "";
-}
-
-    // ======================
-    // CASTLING
-    // ======================
-
-    // White King Side
     if (
+
+        movingPiece === "♙" &&
+        enPassantSquare &&
+        toRow === enPassantSquare[0] &&
+        toCol === enPassantSquare[1]
+
+    ) {
+
+        board[toRow + 1][toCol] = "";
+
+    }
+
+    if (
+
+        movingPiece === "♟" &&
+        enPassantSquare &&
+        toRow === enPassantSquare[0] &&
+        toCol === enPassantSquare[1]
+
+    ) {
+
+        board[toRow - 1][toCol] = "";
+
+    }
+
+    // ==========================
+    // Castling
+    // ==========================
+
+    if (
+
         movingPiece === "♔" &&
         fromRow === 7 &&
-        fromCol === 4 &&
-        toRow === 7 &&
-        toCol === 6
+        fromCol === 4
+
     ) {
-        board[7][5] = "♖";
-        board[7][7] = "";
+
+        // King Side
+
+        if (toCol === 6) {
+
+            board[7][5] = "♖";
+
+            board[7][7] = "";
+
+        }
+
+        // Queen Side
+
+        else if (toCol === 2) {
+
+            board[7][3] = "♖";
+
+            board[7][0] = "";
+
+        }
+
     }
 
-    // White Queen Side
     if (
-        movingPiece === "♔" &&
-        fromRow === 7 &&
-        fromCol === 4 &&
-        toRow === 7 &&
-        toCol === 2
-    ) {
-        board[7][3] = "♖";
-        board[7][0] = "";
-    }
 
-    // Black King Side
-    if (
         movingPiece === "♚" &&
         fromRow === 0 &&
-        fromCol === 4 &&
-        toRow === 0 &&
-        toCol === 6
+        fromCol === 4
+
     ) {
-        board[0][5] = "♜";
-        board[0][7] = "";
+
+        // King Side
+
+        if (toCol === 6) {
+
+            board[0][5] = "♜";
+
+            board[0][7] = "";
+
+        }
+
+        // Queen Side
+
+        else if (toCol === 2) {
+
+            board[0][3] = "♜";
+
+            board[0][0] = "";
+
+        }
+
     }
 
-    // Black Queen Side
-    if (
-        movingPiece === "♚" &&
-        fromRow === 0 &&
-        fromCol === 4 &&
-        toRow === 0 &&
-        toCol === 2
-    ) {
-        board[0][3] = "♜";
-        board[0][0] = "";
+    // ==========================
+    // Pawn Promotion
+    // ==========================
+
+    if (movingPiece === "♙" && toRow === 0) {
+
+        board[toRow][toCol] = choosePromotion("white");
+
     }
 
-    // ======================
-// PAWN PROMOTION
-// ======================
+    if (movingPiece === "♟" && toRow === 7) {
 
-// White Promotion
-if (movingPiece === "♙" && toRow === 0) {
-    board[toRow][toCol] = choosePromotion("white");
-}
+        board[toRow][toCol] = choosePromotion("black");
 
-// Black Promotion
-if (movingPiece === "♟" && toRow === 7) {
-    board[toRow][toCol] = choosePromotion("black");
-}
-
-}
-function validateMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
-
-    // Illegal move?
-    if (isKingInCheck(currentPlayer)) {
-
-        // Undo move
-        board[fromRow][fromCol] = movingPiece;
-        board[toRow][toCol] = capturedPiece;
-
-        legalMoves = [];
-        renderBoard();
-
-        return false;
     }
 
-    return true;
+}
+// ==================================================
+// Move Validation
+// ==================================================
+
+function validateMove(
+    movingPiece,
+    capturedPiece,
+    fromRow,
+    fromCol,
+    toRow,
+    toCol
+) {
+
+    if (!isKingInCheck(currentPlayer)) {
+
+        return true;
+
+    }
+
+    // Restore board
+
+    board[fromRow][fromCol] = movingPiece;
+
+    board[toRow][toCol] = capturedPiece;
+
+    legalMoves = [];
+
+    renderBoard();
+
+    return false;
 
 }
+
+// ==================================================
+// Finish Turn
+// ==================================================
+
 function finishTurn() {
 
     selectedRow = null;
+
     selectedCol = null;
 
     legalMoves = [];
 
     currentPlayer =
         currentPlayer === "white"
-        ? "black"
-        : "white";
+            ? "black"
+            : "white";
 
 }
+
+// ==================================================
+// Track Castling Rights
+// ==================================================
+
 function trackPieceMovement(movingPiece, fromRow, fromCol) {
 
-    // Track King movement
-    if (movingPiece === "♔") {
-        whiteKingMoved = true;
-    }
+    switch (movingPiece) {
 
-    if (movingPiece === "♚") {
-        blackKingMoved = true;
-    }
+        case "♔":
 
-    // Track White Rooks
-    if (movingPiece === "♖") {
+            whiteKingMoved = true;
 
-        if (fromRow === 7 && fromCol === 0) {
-            whiteLeftRookMoved = true;
-        }
+            break;
 
-        if (fromRow === 7 && fromCol === 7) {
-            whiteRightRookMoved = true;
-        }
+        case "♚":
 
-    }
+            blackKingMoved = true;
 
-    // Track Black Rooks
-    if (movingPiece === "♜") {
+            break;
 
-        if (fromRow === 0 && fromCol === 0) {
-            blackLeftRookMoved = true;
-        }
+        case "♖":
 
-        if (fromRow === 0 && fromCol === 7) {
-            blackRightRookMoved = true;
-        }
+            if (fromRow === 7) {
+
+                if (fromCol === 0) {
+
+                    whiteLeftRookMoved = true;
+
+                } else if (fromCol === 7) {
+
+                    whiteRightRookMoved = true;
+
+                }
+
+            }
+
+            break;
+
+        case "♜":
+
+            if (fromRow === 0) {
+
+                if (fromCol === 0) {
+
+                    blackLeftRookMoved = true;
+
+                } else if (fromCol === 7) {
+
+                    blackRightRookMoved = true;
+
+                }
+
+            }
+
+            break;
 
     }
 
 }
+
+// ==================================================
+// Pawn Promotion
+// ==================================================
+
 function choosePromotion(color) {
 
     let choice = prompt(
@@ -311,118 +414,95 @@ B = Bishop
 N = Knight`
     );
 
-    if (!choice) choice = "Q";
-
-    choice = choice.toUpperCase();
+    choice = (choice || "Q").toUpperCase();
 
     if (color === "white") {
 
-        if (choice === "R") return "♖";
-        if (choice === "B") return "♗";
-        if (choice === "N") return "♘";
+        switch (choice) {
 
-        return "♕";
+            case "R": return "♖";
+            case "B": return "♗";
+            case "N": return "♘";
+            default:  return "♕";
+
+        }
 
     }
 
-    else {
+    switch (choice) {
 
-        if (choice === "R") return "♜";
-        if (choice === "B") return "♝";
-        if (choice === "N") return "♞";
-
-        return "♛";
+        case "R": return "♜";
+        case "B": return "♝";
+        case "N": return "♞";
+        default:  return "♛";
 
     }
 
 }
+
+// ==================================================
+// Move Notation
+// ==================================================
+
 function getMoveNotation(
     piece,
     fromCol,
     toRow,
     toCol,
     captured
-){
+) {
 
-    // =========================
     // Castling
-    // =========================
-    if (
-        (piece === "♔" || piece === "♚") &&
-        Math.abs(toCol - fromCol) === 2
-    ) {
 
-        if (toCol === 6) {
-            return "O-O";
-        }
+    if ((piece === "♔" || piece === "♚") && Math.abs(toCol - fromCol) === 2) {
 
-        if (toCol === 2) {
-            return "O-O-O";
-        }
+        return toCol === 6 ? "O-O" : "O-O-O";
 
     }
 
     const file = files[toCol];
+
     const rank = 8 - toRow;
 
-    let symbol = "";
+    // Pawn
 
-    switch (piece) {
+    if (piece === "♙" || piece === "♟") {
 
-        case "♔":
-        case "♚":
-            symbol = "K";
-            break;
+        return captured !== ""
 
-        case "♕":
-        case "♛":
-            symbol = "Q";
-            break;
+            ? `${files[fromCol]}x${file}${rank}`
 
-        case "♖":
-        case "♜":
-            symbol = "R";
-            break;
-
-        case "♗":
-        case "♝":
-            symbol = "B";
-            break;
-
-        case "♘":
-        case "♞":
-            symbol = "N";
-            break;
-
-        case "♙":
-        case "♟":
-
-            if (captured !== "") {
-
-                return (
-                    files[fromCol] +
-                    "x" +
-                    file +
-                    rank
-                );
-
-            }
-
-            return file + rank;
+            : `${file}${rank}`;
 
     }
 
-    if (captured !== "") {
+    // Piece Symbol
 
-        return (
-            symbol +
-            "x" +
-            file +
-            rank
-        );
+    const symbols = {
 
-    }
+        "♔":"K",
+        "♚":"K",
 
-    return symbol + file + rank;
+        "♕":"Q",
+        "♛":"Q",
+
+        "♖":"R",
+        "♜":"R",
+
+        "♗":"B",
+        "♝":"B",
+
+        "♘":"N",
+        "♞":"N"
+
+    };
+
+    const symbol = symbols[piece];
+
+    return captured !== ""
+
+        ? `${symbol}x${file}${rank}`
+
+        : `${symbol}${file}${rank}`;
 
 }

@@ -1,0 +1,234 @@
+/* ==================================================
+   Anand Chess - History
+================================================== */
+
+/* ==========================
+   History Panel
+========================== */
+
+#history{
+
+    width:280px;
+
+    height:560px;
+
+    min-height:560px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    overflow:hidden;
+
+    padding:15px;
+
+    background:var(--panel);
+
+    color:var(--text);
+
+    border:1px solid var(--border);
+
+    box-shadow:var(--shadow);
+
+}
+
+/* ==========================
+   History Tabs
+========================== */
+
+.history-tabs{
+
+    display:flex;
+
+    margin-bottom:16px;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+.tab{
+
+    flex:1;
+
+    padding:12px;
+
+    background:none;
+
+    border:none;
+
+    color:#b5bcc6;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+}
+
+.tab:hover{
+
+    color:var(--text);
+
+}
+
+.tab.active{
+
+    color:var(--accent);
+
+    border-bottom:3px solid var(--accent);
+
+    font-weight:600;
+
+}
+
+/* ==========================
+   Moves List
+========================== */
+
+#moves{
+
+    flex:1;
+
+    margin-top:10px;
+
+    overflow-y:auto;
+
+    color:var(--text);
+
+    font-size:16px;
+
+}
+
+#moves-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    font-family:monospace;
+
+}
+
+#moves-table th{
+
+    padding:10px;
+
+    background:#2b3138;
+
+    color:var(--text);
+
+    font-size:14px;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+#moves-table td{
+
+    padding:6px 8px;
+
+    text-align:center;
+
+    border-bottom:1px solid #ddd;
+
+}
+
+/* ==========================
+   Move Rows
+========================== */
+
+.move-row{
+
+    display:grid;
+
+    grid-template-columns:38px 1fr 1fr;
+
+    align-items:center;
+
+    padding:10px 8px;
+
+    margin-bottom:3px;
+
+    border-radius:var(--radius);
+
+    transition:var(--transition);
+
+}
+
+.move-row:hover{
+
+    background:#2d333b;
+
+}
+
+.move-number{
+
+    color:#8a939f;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.white-move,
+.black-move{
+
+    color:var(--text);
+
+    font-size:15px;
+
+    font-weight:500;
+
+}
+
+/* ==========================
+   History Controls
+========================== */
+
+.history-controls{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-evenly;
+
+    margin-top:auto;
+
+    padding-top:12px;
+
+    border-top:1px solid var(--border);
+
+}
+
+.history-controls button{
+
+    padding:8px;
+
+    background:none;
+
+    border:none;
+
+    color:#bfc7d5;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+}
+
+.history-controls button:hover{
+
+    color:var(--accent);
+
+}
+
+.history-controls button:active{
+
+    transform:scale(.9);
+
+}

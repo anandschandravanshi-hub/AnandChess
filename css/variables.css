@@ -1,0 +1,53 @@
+/* ==================================================
+   Anand Chess - Variables
+================================================== */
+
+:root{
+
+    /* Colors */
+
+    --bg:#15171a;
+    --bg2:#1f2329;
+
+    --panel:#20242b;
+
+    --border:#2d333b;
+
+    --text:#f3f6fa;
+    --text2:#b7c0ca;
+
+    --accent:#3b82f6;
+
+    --gold:#b8893c;
+
+    --light-square:#EEEED2;
+
+    --dark-square:#769656;
+
+    /* Sizes */
+
+    --board-size:560px;
+
+    --history-width:280px;
+
+    --panel-height:560px;
+
+    --radius:8px;
+
+    /* Effects */
+
+    --transition:.2s;
+
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+
+}
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}

@@ -20,7 +20,7 @@ function isKingInCheck(color) {
 }
 function getRemainingPieces() {
 
-    let pieces = [];
+    const pieces = [];
 
     for (let row = 0; row < 8; row++) {
 
@@ -162,7 +162,7 @@ function checkGameState() {
 }
 function getKingAttackSquares(row, col) {
 
-    let attacks = [];
+    const attacks = [];
 
     const directions = [
         [-1,-1],[-1,0],[-1,1],
@@ -205,7 +205,7 @@ function findKing(color) {
 }
 function getPawnAttackSquares(row, col, color) {
 
-    let attacks = [];
+    const attacks = [];
 
     if (color === "white") {
 

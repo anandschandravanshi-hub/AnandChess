@@ -1,6 +1,12 @@
 // ==================================================
 // Anand Chess - Main
-// Game initialization
+// Application Entry Point
 // ==================================================
 
-renderBoard();
+function initializeGame() {
+
+    renderBoard();
+
+}
+
+initializeGame();

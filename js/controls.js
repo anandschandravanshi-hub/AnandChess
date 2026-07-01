@@ -3,47 +3,57 @@
 // Handles mouse, keyboard and button events.
 // ==================================================
 
+// ==========================
+// Board Click
+// ==========================
+
 function handleClick(row, col) {
 
-    // Agar selected legal move par click hua
     if (isLegalMove(row, col)) {
+
         makeMove(selectedRow, selectedCol, row, col);
+
         return;
+
     }
 
     const piece = board[row][col];
 
-    // Empty square
-    if (piece === "") {
-        return;
-    }
+    if (piece === "") return;
 
-    // Wrong color
-    if (currentPlayer === "white" && !isWhitePiece(piece)) {
-        return;
-    }
+    if (currentPlayer === "white" && !isWhitePiece(piece)) return;
 
-    if (currentPlayer === "black" && !isBlackPiece(piece)) {
-        return;
-    }
+    if (currentPlayer === "black" && !isBlackPiece(piece)) return;
 
-    // Select piece
     selectedRow = row;
     selectedCol = col;
 
-    // Generate legal moves
     legalMoves = getLegalMoves(piece, row, col);
-    
 
-renderBoard();
+    renderBoard();
+
 }
+
+// ==========================
+// DOM Elements
+// ==========================
 
 const movesTab = document.getElementById("moves-tab");
 const analysisTab = document.getElementById("analysis-tab");
 
+const newGameBtn = document.getElementById("new-game-btn");
+const undoBtn = document.getElementById("undo-btn");
+const flipBtn = document.getElementById("flip-btn");
+const settingsBtn = document.getElementById("settings-btn");
+
+// ==========================
+// Tabs
+// ==========================
+
 movesTab.addEventListener("click", () => {
 
     movesTab.classList.add("active");
+
     analysisTab.classList.remove("active");
 
 });
@@ -51,42 +61,28 @@ movesTab.addEventListener("click", () => {
 analysisTab.addEventListener("click", () => {
 
     analysisTab.classList.add("active");
+
     movesTab.classList.remove("active");
 
 });
+
 // ==========================
-// New Game Button
+// Buttons
 // ==========================
 
-document
-.getElementById("new-game-btn")
-.addEventListener("click", () => {
+newGameBtn.addEventListener("click", () => {
 
     alert("Coming Soon");
 
 });
 
-
-// ==========================
-// Undo Button
-// ==========================
-
-document
-.getElementById("undo-btn")
-.addEventListener("click", () => {
+undoBtn.addEventListener("click", () => {
 
     undoMove();
 
 });
 
-
-// ==========================
-// Flip Board Button
-// ==========================
-
-document
-.getElementById("flip-btn")
-.addEventListener("click", () => {
+flipBtn.addEventListener("click", () => {
 
     boardFlipped = !boardFlipped;
 
@@ -94,18 +90,16 @@ document
 
 });
 
-
-// ==========================
-// Settings Button
-// ==========================
-
-document
-.getElementById("settings-btn")
-.addEventListener("click", () => {
+settingsBtn.addEventListener("click", () => {
 
     alert("Coming Soon");
 
 });
+
+// ==========================
+// Keyboard Shortcuts
+// ==========================
+
 document.addEventListener("keydown", (event) => {
 
     if (event.ctrlKey && event.key.toLowerCase() === "z") {

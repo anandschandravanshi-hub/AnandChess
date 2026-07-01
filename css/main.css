@@ -1,0 +1,24 @@
+/* ==================================================
+   Anand Chess - Main Stylesheet
+================================================== */
+
+@import url("variables.css");
+@import url("layout.css");
+@import url("board.css");
+@import url("pieces.css");
+@import url("controls.css");
+@import url("history.css");
+@import url("status.css");
+@import url("modal.css");
+@import url("animations.css");
+@import url("responsive.css");
+
+/* ==========================
+   Global Utilities
+========================== */
+
+.hidden{
+
+    display:none !important;
+
+}

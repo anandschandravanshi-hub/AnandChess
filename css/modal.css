@@ -1,0 +1,95 @@
+/* ==================================================
+   Anand Chess - Modal
+================================================== */
+
+/* ==========================
+   Game Modal
+========================== */
+
+#game-modal{
+
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:rgba(0,0,0,.65);
+
+    z-index:999;
+
+}
+
+/* ==========================
+   Modal Content
+========================== */
+
+.modal-content{
+
+    width:320px;
+
+    padding:30px;
+
+    text-align:center;
+
+    background:#fff;
+
+    color:#222;
+
+    border-radius:12px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+
+}
+
+.modal-content h2{
+
+    margin-bottom:12px;
+
+}
+
+.modal-content p{
+
+    margin-bottom:20px;
+
+}
+
+/* ==========================
+   Modal Button
+========================== */
+
+.modal-content button{
+
+    padding:10px 22px;
+
+    background:var(--accent);
+
+    color:var(--text);
+
+    border:none;
+
+    border-radius:var(--radius);
+
+    font-size:16px;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+}
+
+.modal-content button:hover{
+
+    filter:brightness(1.08);
+
+}
+
+.modal-content button:active{
+
+    transform:scale(.98);
+
+}

@@ -1,0 +1,235 @@
+/* ==================================================
+   Anand Chess - Board
+================================================== */
+
+/* ==========================
+   Board Frame
+========================== */
+
+.board-frame{
+
+    position:relative;
+
+    padding:14px;
+
+    background:var(--panel);
+
+    border:2px solid var(--gold);
+
+    border-radius:18px;
+
+    box-shadow:
+        0 0 25px rgba(184,137,60,.20),
+        0 12px 35px rgba(0,0,0,.45);
+
+}
+
+.board-frame::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:6px;
+
+    border:1px solid rgba(255,223,150,.35);
+
+    border-radius:12px;
+
+    pointer-events:none;
+
+}
+
+.board-frame::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:-2px;
+
+    border-radius:20px;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        inset 0 -1px 0 rgba(0,0,0,.45);
+
+    pointer-events:none;
+
+}
+
+/* ==========================
+   Chess Board
+========================== */
+
+#chessboard{
+
+    width:var(--board-size);
+
+    height:var(--board-size);
+
+    display:grid;
+
+    grid-template-columns:repeat(8,1fr);
+
+    grid-template-rows:repeat(8,1fr);
+
+    overflow:hidden;
+
+    border:1px solid rgba(255,255,255,.05);
+
+    border-radius:10px;
+
+    box-shadow:var(--shadow);
+
+}
+
+/* ==========================
+   Squares
+========================== */
+
+.square{
+
+    position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    user-select:none;
+
+    font-size:52px;
+
+}
+
+.dark{
+
+    background:var(--dark-square);
+
+}
+
+.light{
+
+    background:var(--light-square);
+
+}
+
+/* ==========================
+   Coordinates
+========================== */
+
+.rank-coordinate,
+.file-coordinate{
+
+    position:absolute;
+
+    font-size:11px;
+
+    font-weight:600;
+
+    pointer-events:none;
+
+}
+
+.rank-coordinate{
+
+    top:3px;
+
+    left:4px;
+
+    color:rgba(0,0,0,.35);
+
+}
+
+.file-coordinate{
+
+    right:4px;
+
+    bottom:3px;
+
+    color:rgba(0,0,0,.35);
+
+}
+
+.dark .rank-coordinate,
+.dark .file-coordinate{
+
+    color:rgba(255,255,255,.55);
+
+}
+
+/* ==========================
+   Corner Frame
+========================== */
+
+.corner{
+
+    position:absolute;
+
+    width:26px;
+
+    height:26px;
+
+    pointer-events:none;
+
+}
+
+.top-left{
+
+    top:8px;
+
+    left:8px;
+
+    border-top:3px solid var(--gold);
+
+    border-left:3px solid var(--gold);
+
+    border-radius:8px 0 0 0;
+
+}
+
+.top-right{
+
+    top:8px;
+
+    right:8px;
+
+    border-top:3px solid var(--gold);
+
+    border-right:3px solid var(--gold);
+
+    border-radius:0 8px 0 0;
+
+}
+
+.bottom-left{
+
+    bottom:8px;
+
+    left:8px;
+
+    border-bottom:3px solid var(--gold);
+
+    border-left:3px solid var(--gold);
+
+    border-radius:0 0 0 8px;
+
+}
+
+.bottom-right{
+
+    right:8px;
+
+    bottom:8px;
+
+    border-bottom:3px solid var(--gold);
+
+    border-right:3px solid var(--gold);
+
+    border-radius:0 0 8px 0;
+
+}
