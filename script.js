@@ -42,6 +42,7 @@ let boardHistory = [];
 let currentPosition = -1;
 let currentHistoryIndex = -1;
 let historyMode = false;
+let boardFlipped = false;
 
 function animateMove(toRow, toCol) {
 
@@ -100,11 +101,22 @@ function renderBoard() {
 
     chessboard.innerHTML = "";
 
-    for (let row = 0; row < 8; row++) {
+    for (let displayRow = 0; displayRow < 8; displayRow++) {
 
-        for (let col = 0; col < 8; col++) {
+    for (let displayCol = 0; displayCol < 8; displayCol++) {
+
+        const row = boardFlipped
+            ? 7 - displayRow
+            : displayRow;
+
+        const col = boardFlipped
+            ? 7 - displayCol
+            : displayCol;
 
             const square = document.createElement("div");
+
+            const boardRow = displayRow;
+            const boardCol = displayCol;
 
             square.classList.add("square");
 
@@ -116,8 +128,8 @@ function renderBoard() {
             }
 
             // Data Attributes
-            square.dataset.row = row;
-            square.dataset.col = col;
+           square.dataset.row = boardFlipped ? 7 - boardRow : boardRow;
+           square.dataset.col = boardFlipped ? 7 - boardCol : boardCol;
             square.dataset.square = files[col] + (8 - row);
 
             // ======================
@@ -145,6 +157,17 @@ function renderBoard() {
             const piece = document.createElement("div");
 
             piece.classList.add("piece");
+            if (isWhitePiece(board[row][col])) {
+
+    piece.classList.add("white-piece");
+
+}
+
+if (isBlackPiece(board[row][col])) {
+
+    piece.classList.add("black-piece");
+
+}
 
             piece.textContent = board[row][col];
 
@@ -910,9 +933,16 @@ function undoMove() {
     
     currentPosition = boardHistory.length - 1;
 
-    for (let row = 0; row < 8; row++) {
+    for (let displayRow = 0; displayRow < 8; displayRow++) {
 
-    for (let col = 0; col < 8; col++) {
+    for (let displayCol = 0; displayCol < 8; displayCol++) {
+        let row = boardFlipped
+    ? 7 - displayRow
+    : displayRow;
+
+let col = boardFlipped
+    ? 7 - displayCol
+    : displayCol;
 
         board[row][col] = previousState.board[row][col];
 
@@ -1713,7 +1743,10 @@ document
 .getElementById("flip-btn")
 .addEventListener("click", () => {
 
-    alert("Coming Soon");
+    boardFlipped = !boardFlipped;
+    console.log(boardFlipped);
+
+    renderBoard();
 
 });
 
