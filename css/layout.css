@@ -44,13 +44,15 @@ body{
 
 #left-panel{
 
-    width:260px;
+    width:230px;
 
 }
 
 .game{
 
     display:flex;
+    gap:8px;
+align-items:flex-start;
 
     flex-direction:column;
 
@@ -99,9 +101,10 @@ body{
 
 .logo-panel{
 
-    min-height:70px;
-
-    padding:12px 16px;
+    min-width:230px;
+    min-height:55px;
+    height:40px;
+    border-radius:12px;
 
 }
 
@@ -111,28 +114,33 @@ body{
 
     align-items:center;
 
-    gap:8px;
+    justify-content:center;
+
+    gap:5px;
+
+    flex-wrap:nowrap;
 
 }
 
 .logo-icon{
 
-    font-size:18px;
+    font-size:20px;
 
 }
 
 .logo-name{
 
-    color:var(--gold);
+    font-size:20px;
 
-    font-size:18px;
+    font-weight:900;
 
-    font-weight:700;
+    letter-spacing:1px;
 
-    letter-spacing:.5px;
+    line-height:1;
+
+    white-space:nowrap;
 
 }
-
 .logo-tagline{
 
     margin-top:10px;
@@ -151,11 +159,15 @@ body{
 
 #captured-panel{
 
-    height:200px;
+    height:230px;          /* Pehle 200px tha */
 
-    min-height:125px;
+    min-height:270px;      /* Dono same rakho */
 
-    padding:15px;
+    padding:16px;
+
+    margin-top:12px;       /* Logo panel se gap */
+
+    border-radius:14px;    /* Soft curve */
 
 }
 
@@ -165,11 +177,15 @@ body{
 
 #controls-panel{
 
+    height:235px;
+
+    min-height:360px;
+
+    padding:16px;
+
     margin-top:12px;
 
-    padding:12px;
-
-    min-height:0;
+    border-radius:14px;
 
 }
 

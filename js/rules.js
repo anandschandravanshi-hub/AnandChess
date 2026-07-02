@@ -101,11 +101,16 @@ function checkGameState() {
 
         if (hasAnyLegalMove(currentPlayer)) {
 
-            alert("Check!");
+           document.querySelector("#game-status .status-title").textContent = "Check!";
 
         } else {
 
-            alert("Checkmate!");
+            showGameOver(
+    "🏆 Game Over",
+    `${currentPlayer === "white" ? "Black" : "White"} wins by Checkmate!`
+);
+
+return;
 
             return;
         }
@@ -119,7 +124,12 @@ function checkGameState() {
 
         if (!hasAnyLegalMove(currentPlayer)) {
 
-            alert("Stalemate!");
+            showGameOver(
+    "🤝 Draw",
+    "Game drawn by Stalemate."
+);
+
+return;
 
             return;
         }
@@ -131,7 +141,12 @@ function checkGameState() {
     // ======================
     if (halfMoveClock >= 100) {
 
-        alert("Draw by 50-Move Rule!");
+        showGameOver(
+    "🤝 Draw",
+    "Game drawn by 50-Move Rule."
+);
+
+return;
 
         return;
 
@@ -142,7 +157,12 @@ function checkGameState() {
     // ======================
     if (isThreefoldRepetition()) {
 
-    alert("Draw by Threefold Repetition!");
+    showGameOver(
+    "🤝 Draw",
+    "Game drawn by Threefold Repetition."
+);
+
+return;
 
     return;
 
@@ -153,7 +173,12 @@ function checkGameState() {
     // ======================
     if (isInsufficientMaterial()) {
 
-        alert("Draw by Insufficient Material!");
+        showGameOver(
+    "🤝 Draw",
+    "Game drawn by Insufficient Material."
+);
+
+return;
 
         return;
 

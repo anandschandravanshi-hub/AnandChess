@@ -35,7 +35,8 @@ let moveHistory = [];
 
 let boardHistory = [];
 
-let currentPosition = -1;
+let currentPosition = 0;
+let viewPosition = 0;
 
 let historyMode = false;
 
@@ -57,3 +58,6 @@ let whiteRightRookMoved = false;
 
 let blackLeftRookMoved = false;
 let blackRightRookMoved = false;
+
+let promotionResolve = null;
+let gameOver = false;

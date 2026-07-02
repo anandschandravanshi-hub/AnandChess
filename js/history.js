@@ -81,39 +81,83 @@ function saveMove(movingPiece, capturedPiece, fromRow, fromCol, toRow, toCol) {
 
 }
 
+function saveBoardState() {
+
+    // Agar user previous position dekh raha tha,
+    // aur naya move khel diya, to future history delete.
+
+    if (currentPosition < boardHistory.length - 1) {
+
+        boardHistory.splice(currentPosition + 1);
+
+    }
+
+    boardHistory.push({
+
+        board: JSON.parse(JSON.stringify(board)),
+
+        currentPlayer,
+
+        lastMoveHighlight:
+            lastMoveHighlight
+                ? { ...lastMoveHighlight }
+                : null
+
+    });
+
+    currentPosition = boardHistory.length - 1;
+viewPosition = currentPosition;
+
+}
 // ==========================
 // Undo
 // ==========================
 
-function undoMove() {
+// ==================================================
+// Restore Board State
+// ==================================================
 
-    if (boardHistory.length === 0) return;
+function restoreBoardState(state) {
 
-    const previousState = boardHistory.pop();
-
-    currentPosition = boardHistory.length - 1;
+    
 
     for (let row = 0; row < 8; row++) {
 
         for (let col = 0; col < 8; col++) {
 
-            board[row][col] = previousState.board[row][col];
+            board[row][col] = state.board[row][col];
 
         }
 
     }
 
-    currentPlayer = previousState.currentPlayer;
+    currentPlayer = state.currentPlayer;
 
-    lastMoveHighlight = previousState.lastMoveHighlight;
+    lastMoveHighlight = state.lastMoveHighlight
+        ? { ...state.lastMoveHighlight }
+        : null;
 
-    moveHistory.pop();
-
-    updateMoveHistory();
+    
 
     updateCapturedPieces();
 
+    updateMoveHistory();
+
     renderBoard();
+
+}
+
+function undoMove() {
+
+    if (currentPosition <= 0) {
+        return;
+    }
+
+    currentPosition--;
+
+    restoreBoardState(
+        boardHistory[currentPosition]
+    );
 
 }
 
@@ -134,63 +178,58 @@ const lastMoveBtn = document.getElementById("last-move-btn");
 // ==========================
 
 firstMoveBtn.addEventListener("click", () => {
+    historyMode = true;
 
     if (boardHistory.length === 0) return;
 
-    const state = boardHistory[0];
+    viewPosition = 0;
 
-    for (let row = 0; row < 8; row++) {
-
-        for (let col = 0; col < 8; col++) {
-
-            board[row][col] = state.board[row][col];
-
-        }
-
-    }
-
-    currentPlayer = state.currentPlayer;
-
-    lastMoveHighlight = state.lastMoveHighlight;
-
-    renderBoard();
+    restoreBoardState(
+        boardHistory[viewPosition]
+    );
 
 });
 
 prevMoveBtn.addEventListener("click", () => {
 
-    if (currentPosition <= 0) return;
+    historyMode = true;
 
-    currentPosition--;
+    if (viewPosition <= 0) return;
 
-    const state = boardHistory[currentPosition];
+    viewPosition--;
 
-    for (let row = 0; row < 8; row++) {
-
-        for (let col = 0; col < 8; col++) {
-
-            board[row][col] = state.board[row][col];
-
-        }
-
-    }
-
-    currentPlayer = state.currentPlayer;
-
-    lastMoveHighlight = state.lastMoveHighlight;
-
-    renderBoard();
+    restoreBoardState(
+        boardHistory[viewPosition]
+    );
 
 });
 
 nextMoveBtn.addEventListener("click", () => {
 
-    console.log("Next button clicked");
+    if (viewPosition >= boardHistory.length - 1) return;
+
+viewPosition++;
+
+historyMode = (viewPosition !== currentPosition);
+
+restoreBoardState(
+    boardHistory[viewPosition]
+);
 
 });
 
 lastMoveBtn.addEventListener("click", () => {
 
-    console.log("Last button clicked");
+    historyMode = false;
+
+    if (boardHistory.length === 0) return;
+
+viewPosition = currentPosition;
+
+historyMode = false;
+
+restoreBoardState(
+    boardHistory[viewPosition]
+);
 
 });

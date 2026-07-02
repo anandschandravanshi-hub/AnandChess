@@ -241,50 +241,59 @@ function renderBoard() {
 function updateCapturedPieces() {
 
     capturedWhite.innerHTML = "";
-
     capturedBlack.innerHTML = "";
 
-    const whiteCounts = {
-
-        "♕":0,
-        "♖":0,
-        "♗":0,
-        "♘":0,
-        "♙":0
-
+    // Initial piece count
+    const initial = {
+        "♔":1,"♕":1,"♖":2,"♗":2,"♘":2,"♙":8,
+        "♚":1,"♛":1,"♜":2,"♝":2,"♞":2,"♟":8
     };
 
-    const blackCounts = {
+    // Count pieces currently on board
+    const current = {};
 
-        "♛":0,
-        "♜":0,
-        "♝":0,
-        "♞":0,
-        "♟":0
+    for (const piece in initial) {
+        current[piece] = 0;
+    }
 
-    };
+    for (let row = 0; row < 8; row++) {
 
-    // Count Captured Pieces
+        for (let col = 0; col < 8; col++) {
 
-    for (const move of moveHistory) {
+            const piece = board[row][col];
 
-        if (move.captured === "") continue;
-
-        if (isWhitePiece(move.captured)) {
-
-            whiteCounts[move.captured]++;
-
-        } else {
-
-            blackCounts[move.captured]++;
+            if (piece !== "") {
+                current[piece]++;
+            }
 
         }
 
     }
 
-    renderCapturedPieces(capturedBlack, blackCounts);
+    // Captured pieces
+    const whiteCaptured = {};
+    const blackCaptured = {};
 
-    renderCapturedPieces(capturedWhite, whiteCounts);
+    for (const piece in initial) {
+
+        const captured = initial[piece] - current[piece];
+
+        if (captured <= 0) continue;
+
+        if (isWhitePiece(piece)) {
+
+            whiteCaptured[piece] = captured;
+
+        } else {
+
+            blackCaptured[piece] = captured;
+
+        }
+
+    }
+
+    renderCapturedPieces(capturedBlack, blackCaptured);
+    renderCapturedPieces(capturedWhite, whiteCaptured);
 
 }
 
@@ -294,28 +303,50 @@ function updateCapturedPieces() {
 
 function renderCapturedPieces(container, counts) {
 
+    container.innerHTML = "";
+
     for (const piece in counts) {
 
-        if (counts[piece] === 0) continue;
+        const total = counts[piece];
 
-        const item = document.createElement("div");
+        if (total === 0) continue;
 
-        item.className = "captured-item";
+        const group = document.createElement("div");
+        group.className = "captured-group";
 
-        item.innerHTML = `
+        // Maximum 4 pieces show
+        const visible = Math.min(total, 4);
 
-            <span class="captured-piece">${piece}</span>
+        for (let i = 0; i < visible; i++) {
 
-            <span class="captured-count">×${counts[piece]}</span>
+            const span = document.createElement("span");
 
-        `;
+            span.className = "captured-piece";
 
-        container.appendChild(item);
+            span.textContent = piece;
+
+            group.appendChild(span);
+
+        }
+
+        // Show +N if more pieces
+        if (total > 4) {
+
+            const extra = document.createElement("span");
+
+            extra.className = "captured-extra";
+
+            extra.textContent = "+" + (total - 4);
+
+            group.appendChild(extra);
+
+        }
+
+        container.appendChild(group);
 
     }
 
 }
-
 // ==================================================
 // Move History
 // ==================================================
@@ -324,13 +355,13 @@ function updateMoveHistory() {
 
     movesDiv.innerHTML = "";
 
-    for (let i = 0; i < moveHistory.length; i += 2) {
+    const visibleMoves = moveHistory.slice(0, currentPosition);
+
+    for (let i = 0; i < visibleMoves.length; i += 2) {
 
         const row = document.createElement("div");
 
         row.className = "move-row";
-
-        // Move Number
 
         const moveNumber = document.createElement("div");
 
@@ -338,21 +369,19 @@ function updateMoveHistory() {
 
         moveNumber.textContent = `${Math.floor(i / 2) + 1}.`;
 
-        // White Move
-
         const whiteMove = document.createElement("div");
 
         whiteMove.className = "white-move";
 
-        whiteMove.textContent = moveHistory[i]?.notation || "";
-
-        // Black Move
+        whiteMove.textContent =
+            visibleMoves[i]?.notation || "";
 
         const blackMove = document.createElement("div");
 
         blackMove.className = "black-move";
 
-        blackMove.textContent = moveHistory[i + 1]?.notation || "";
+        blackMove.textContent =
+            visibleMoves[i + 1]?.notation || "";
 
         row.append(
 
@@ -480,3 +509,34 @@ function animateSquare(row, col) {
     });
 
 }
+function showGameOver(title, message) {
+
+    gameOver = true;
+
+    document.getElementById("game-over-title").textContent =
+        title;
+
+    document.getElementById("game-over-message").textContent =
+        message;
+
+    document
+        .getElementById("game-over-modal")
+        .classList.remove("hidden");
+
+}
+function hideGameOver() {
+
+    gameOver = false;
+
+    document
+        .getElementById("game-over-modal")
+        .classList.add("hidden");
+
+}
+document
+    .getElementById("new-game-modal-btn")
+    .addEventListener("click", () => {
+
+        location.reload();
+
+    });

@@ -53,120 +53,74 @@ function isLegalMove(row, col) {
 async function makeMove(fromRow, fromCol, toRow, toCol) {
 
     const movingPiece = board[fromRow][fromCol];
-
     const capturedPiece = board[toRow][toCol];
 
     // Track castling rights
-
     trackPieceMovement(movingPiece, fromRow, fromCol);
 
-    // Animate move
-
+    // Animate
     await animateMove(
-
         movingPiece,
-
         fromRow,
         fromCol,
-
         toRow,
         toCol
-
     );
 
-    // Update board
-
-    executeMove(
-
+    // Execute move
+    await executeMove(
         movingPiece,
-
         fromRow,
         fromCol,
-
         toRow,
         toCol
-
     );
 
-    // Save board state
-
-    boardHistory.push({
-
-        board: JSON.parse(JSON.stringify(board)),
-
-        currentPlayer,
-
-        lastMoveHighlight: lastMoveHighlight
-            ? { ...lastMoveHighlight }
-            : null
-
-    });
-
-    currentPosition = boardHistory.length - 1;
-
-    // Validate move
-
+    // Validate
     if (
-
         !validateMove(
-
             movingPiece,
             capturedPiece,
-
             fromRow,
             fromCol,
-
             toRow,
             toCol
-
         )
-
     ) {
-
         return false;
-
     }
 
-    // Save history
-
+    // Save notation/history
     saveMove(
-
         movingPiece,
         capturedPiece,
-
         fromRow,
         fromCol,
-
         toRow,
         toCol
-
     );
 
-    // Finish turn
-
+    // Change turn
     finishTurn();
 
-    // Update game state
+    // Save complete game state
+    saveBoardState();
 
+    // Check game state
     checkGameState();
 
     // Refresh UI
-
     updateMoveHistory();
-
     updateCapturedPieces();
-
     renderBoard();
 
     return true;
-
 }
-
 // ==================================================
 // Execute Move
 // ==================================================
 
-function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
+async function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
 
     // ==========================
     // Normal Move
@@ -276,15 +230,17 @@ function executeMove(movingPiece, fromRow, fromCol, toRow, toCol) {
 
     if (movingPiece === "♙" && toRow === 0) {
 
-        board[toRow][toCol] = choosePromotion("white");
+    board[toRow][toCol] =
+        await choosePromotion("white");
 
-    }
+}
 
-    if (movingPiece === "♟" && toRow === 7) {
+if (movingPiece === "♟" && toRow === 7) {
 
-        board[toRow][toCol] = choosePromotion("black");
+    board[toRow][toCol] =
+        await choosePromotion("black");
 
-    }
+}
 
 }
 // ==================================================
@@ -405,38 +361,46 @@ function trackPieceMovement(movingPiece, fromRow, fromCol) {
 
 function choosePromotion(color) {
 
-    let choice = prompt(
-`Promote Pawn
+    return new Promise(resolve => {
 
-Q = Queen
-R = Rook
-B = Bishop
-N = Knight`
-    );
+        promotionResolve = resolve;
 
-    choice = (choice || "Q").toUpperCase();
+        const modal =
+            document.getElementById("promotion-modal");
 
-    if (color === "white") {
+        const options =
+            document.getElementById("promotion-options");
 
-        switch (choice) {
+        options.innerHTML = "";
 
-            case "R": return "♖";
-            case "B": return "♗";
-            case "N": return "♘";
-            default:  return "♕";
+        const pieces =
+            color === "white"
+                ? ["♕","♖","♗","♘"]
+                : ["♛","♜","♝","♞"];
+
+        for (const piece of pieces) {
+
+            const div = document.createElement("div");
+
+            div.className = "promotion-piece";
+
+            div.textContent = piece;
+
+            div.onclick = () => {
+
+                modal.classList.add("hidden");
+
+                resolve(piece);
+
+            };
+
+            options.appendChild(div);
 
         }
 
-    }
+        modal.classList.remove("hidden");
 
-    switch (choice) {
-
-        case "R": return "♜";
-        case "B": return "♝";
-        case "N": return "♞";
-        default:  return "♛";
-
-    }
+    });
 
 }
 

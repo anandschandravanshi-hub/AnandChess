@@ -10,9 +10,10 @@
 
     width:280px;
 
-    height:560px;
+    height:592px;
+min-height:592px;
 
-    min-height:560px;
+border-radius:18px;
 
     display:flex;
 
@@ -20,7 +21,7 @@
 
     overflow:hidden;
 
-    padding:15px;
+    padding:16px;
 
     background:var(--panel);
 
@@ -28,7 +29,11 @@
 
     border:1px solid var(--border);
 
+    border-radius:14px;
+
     box-shadow:var(--shadow);
+
+    flex-shrink:0;
 
 }
 
@@ -92,6 +97,8 @@
 
     margin-top:10px;
 
+    padding-left:20;
+
     overflow-y:auto;
 
     color:var(--text);
@@ -148,6 +155,8 @@
 
     padding:10px 8px;
 
+    padding-left:18px;
+
     margin-bottom:3px;
 
     border-radius:var(--radius);
@@ -191,13 +200,15 @@
 
     display:flex;
 
+    justify-content:center;
+
     align-items:center;
 
-    justify-content:space-evenly;
+    gap:18px;
 
     margin-top:auto;
 
-    padding-top:12px;
+    padding-top:10px;
 
     border-top:1px solid var(--border);
 
@@ -205,7 +216,17 @@
 
 .history-controls button{
 
-    padding:8px;
+    width:28px;
+
+    height:28px;
+
+    padding:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
 
     background:none;
 
@@ -213,7 +234,7 @@
 
     color:#bfc7d5;
 
-    font-size:24px;
+    font-size:16px;
 
     cursor:pointer;
 
@@ -225,10 +246,12 @@
 
     color:var(--accent);
 
+    transform:scale(1.08);
+
 }
 
 .history-controls button:active{
 
-    transform:scale(.9);
+    transform:scale(.92);
 
 }

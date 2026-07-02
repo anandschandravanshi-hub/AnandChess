@@ -93,3 +93,72 @@
     transform:scale(.98);
 
 }
+#promotion-modal{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.65);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:2000;
+
+}
+
+.promotion-box{
+
+    background:#fff;
+
+    padding:24px;
+
+    border-radius:12px;
+
+    text-align:center;
+
+}
+
+#promotion-options{
+
+    display:flex;
+
+    gap:12px;
+
+    margin-top:18px;
+
+}
+
+.promotion-piece{
+
+    width:64px;
+
+    height:64px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:44px;
+
+    cursor:pointer;
+
+    border-radius:10px;
+
+    transition:.15s;
+
+}
+
+.promotion-piece:hover{
+
+    background:#ececec;
+
+    transform:scale(1.08);
+
+}

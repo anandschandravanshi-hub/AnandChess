@@ -9,6 +9,18 @@
 
 function handleClick(row, col) {
 
+    if (gameOver) {
+        return;
+    }
+
+    if (historyMode) {
+
+        alert("Return to the latest position to continue playing.");
+
+        return;
+
+}
+
     if (isLegalMove(row, col)) {
 
         makeMove(selectedRow, selectedCol, row, col);
